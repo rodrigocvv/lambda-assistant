@@ -1,0 +1,58 @@
+import * as vscode from 'vscode';
+
+export class LambdaProvider implements vscode.TreeDataProvider<LambdaItem> {
+
+    private _onDidChangeTreeData: vscode.EventEmitter<LambdaItem | undefined | void> = new vscode.EventEmitter<LambdaItem | undefined | void>();
+    readonly onDidChangeTreeData: vscode.Event<LambdaItem | undefined | void> = this._onDidChangeTreeData.event;
+
+    data: LambdaItem[] | undefined;
+
+    constructor(private lambdaList: string[] | undefined) {
+        this.data = this.getDataFromLambdaList(lambdaList);
+    }
+
+    private getDataFromLambdaList(lambdaList: string[] | undefined): LambdaItem[] | undefined {
+        let data;
+        if (lambdaList && lambdaList.length > 0) {
+            data = [];
+            lambdaList.forEach(lambda => data.push(new LambdaItem(lambda, vscode.TreeItemCollapsibleState.None)));
+        }
+        return data;
+    }
+
+
+    getTreeItem(element: LambdaItem): vscode.TreeItem {
+        return element;
+    }
+
+    refresh(lambdaList: string[] | undefined): void {
+        this.data = this.getDataFromLambdaList(lambdaList);
+        this._onDidChangeTreeData.fire();
+    }
+
+    getChildren(element?: LambdaItem | undefined): vscode.ProviderResult<LambdaItem[]> {
+        if (element === undefined) {
+            return this.data;
+        }
+        // return element.children;
+    }
+}
+
+
+
+class LambdaItem extends vscode.TreeItem {
+    constructor(
+        public readonly label: string,
+        public readonly collapsibleState: vscode.TreeItemCollapsibleState
+    ) {
+        super(label, collapsibleState);
+        this.tooltip = `meu tooltip`;
+        this.description = 'descricao qualquer';
+    }
+
+    // iconPath = {
+    //   light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
+    //   dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
+    // };
+}
+
