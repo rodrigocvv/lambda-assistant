@@ -7,7 +7,7 @@ export class LambdaProvider implements vscode.TreeDataProvider<LambdaItem> {
 
     data: LambdaItem[] | undefined;
 
-    constructor(private lambdaList: string[] | undefined) {
+    constructor(lambdaList: string[] | undefined) {
         this.data = this.getDataFromLambdaList(lambdaList);
     }
 
@@ -19,7 +19,6 @@ export class LambdaProvider implements vscode.TreeDataProvider<LambdaItem> {
         }
         return data;
     }
-
 
     getTreeItem(element: LambdaItem): vscode.TreeItem {
         return element;
@@ -34,11 +33,8 @@ export class LambdaProvider implements vscode.TreeDataProvider<LambdaItem> {
         if (element === undefined) {
             return this.data;
         }
-        // return element.children;
     }
 }
-
-
 
 class LambdaItem extends vscode.TreeItem {
     constructor(
@@ -46,13 +42,6 @@ class LambdaItem extends vscode.TreeItem {
         public readonly collapsibleState: vscode.TreeItemCollapsibleState
     ) {
         super(label, collapsibleState);
-        this.tooltip = `meu tooltip`;
-        this.description = 'descricao qualquer';
     }
-
-    // iconPath = {
-    //   light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
-    //   dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
-    // };
 }
 

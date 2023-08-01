@@ -24,7 +24,19 @@
           "dark": "resources/white-refresh.svg",
           "light": "resources/refresh.svg"
         }
-      }
+      },
+      {
+        "command": "lambdaItem.showLog",
+        "title": "Show Log"
+      },
+      {
+        "command": "lambdaItem.deploy",
+        "title": "Deploy"
+      },
+      {
+        "command": "lambdaAssistant.openSettings",
+        "title": "Settings"
+      }      
     ],
     "viewsContainers": {
       "activitybar": [
@@ -51,8 +63,25 @@
           "when": "view == lambdasView",
           "group": "navigation"
         }
+      ],
+      "view/item/context": [
+        {
+          "command": "lambdaItem.showLog",
+          "when": "view == lambdasView"
+        },
+        {
+          "command": "lambdaItem.deploy",
+          "when": "view == lambdasView"
+        }
       ]
-    }
+    },
+    "viewsWelcome": [
+      {
+        "view": "lambdasView",
+        "contents": "No settings found. Click in the button to configure you workspace.\n[Settings](command:lambdaAssistant.openSettings)",
+        "when": "!isExtesionConfigured"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -64,6 +93,7 @@
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
+    "@types/js-yaml": "^4.0.5",
     "@types/mocha": "^10.0.1",
     "@types/node": "20.2.5",
     "@types/vscode": "^1.80.0",
@@ -76,6 +106,7 @@
     "typescript": "^5.1.3"
   },
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.379.1"
+    "@aws-sdk/client-lambda": "^3.379.1",
+    "js-yaml": "^4.1.0"
   }
 }
