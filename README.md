@@ -1,6 +1,6 @@
 # lambda-assistant README
 
-This is the README for your extension "lambda-assistant". After writing up a brief description, we recommend including the following sections.
+This extesion will help with your lambdas operations.
 
 ## Features
 

@@ -14,10 +14,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "lambda-assistant.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "lambdasView.refresh",
         "title": "Refresh",
         "icon": {
@@ -35,7 +31,11 @@
       },
       {
         "command": "lambdaAssistant.openSettings",
-        "title": "Settings"
+        "title": "Settings",
+        "icon": {
+          "dark": "resources/settings.svg",
+          "light": "resources/settings.svg"
+        }        
       }      
     ],
     "viewsContainers": {
@@ -60,6 +60,11 @@
       "view/title": [
         {
           "command": "lambdasView.refresh",
+          "when": "view == lambdasView && isExtesionConfigured",
+          "group": "navigation"
+        },
+        {
+          "command": "lambdaAssistant.openSettings",
           "when": "view == lambdasView",
           "group": "navigation"
         }
@@ -89,7 +94,8 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "build": "vsce package"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",

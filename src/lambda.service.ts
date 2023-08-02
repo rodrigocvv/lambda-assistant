@@ -12,7 +12,9 @@ export class LambdaService {
 
     public async refreshData(): Promise<void> {
         const lambdaList = await this.retriveLambdaListFromAws();
-        this.context.workspaceState.update('lambdaList', lambdaList);
+        const prefix = this.context.workspaceState.get('prefixName') as string;
+        const filteredList = lambdaList.filter(obj => obj.startsWith(prefix));
+        this.context.workspaceState.update('lambdaList', filteredList);
     }
 
     private async retriveLambdaListFromAws(): Promise<string[]> {
