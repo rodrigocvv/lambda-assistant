@@ -26,6 +26,10 @@
         "title": "Show Log"
       },
       {
+        "command": "lambdasView.updateStage",
+        "title": "Change Stage"
+      },
+      {
         "command": "lambdaItem.deploy",
         "title": "Deploy"
       },
@@ -67,7 +71,11 @@
           "command": "lambdaAssistant.openSettings",
           "when": "view == lambdasView",
           "group": "navigation"
-        }
+        },
+        {
+          "command": "lambdasView.updateStage",
+          "when": "view == lambdasView && stageSupport"
+        }        
       ],
       "view/item/context": [
         {

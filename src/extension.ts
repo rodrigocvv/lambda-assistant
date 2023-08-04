@@ -31,15 +31,34 @@ async function addViews(context: vscode.ExtensionContext): Promise<void> {
 	context.subscriptions.push(refreshLmabdaButonDisposable);
 
 
+	let changeStageButonDisposable = vscode.commands.registerCommand('lambdasView.updateStage', async () => {
+		const stageList: string[] = context.workspaceState.get('stageList') || [];
+		const stage = await vscode.window.showQuickPick(stageList, {canPickMany: false, title: "Select you stage:"});
+		context.workspaceState.update('currentStage', stage);
+		lambdaProvider.refresh(lambdaService.getLambdaList());
+		// vscode.commands.executeCommand('lambdasView.refresh');
+	});
+	context.subscriptions.push(changeStageButonDisposable);	
+	vscode.commands.executeCommand('setContext', 'stageSupport', context.workspaceState.get('stageSupport'));
+
 
 	const isConfigured = context.workspaceState.get('isExtesionConfigured') || false;
 	vscode.commands.executeCommand('setContext', 'isExtesionConfigured', isConfigured);
+	
 
 
 
 	
 	const settingsView = new SettingsView(context);
 	let openSettingsButonDisposable = vscode.commands.registerCommand('lambdaAssistant.openSettings', async () => {
+
+
+
+
+		
+		
+		
+		
 		settingsView.openView();
 	});
 	context.subscriptions.push(openSettingsButonDisposable);

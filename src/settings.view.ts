@@ -23,12 +23,42 @@ export class SettingsView {
 
         this.panel.webview.onDidReceiveMessage(
             message => {
+                let stageList: string[];
                 switch (message.command) {
                     case 'save':
                         this.context.workspaceState.update('prefixName', message.text);
                         this.context.workspaceState.update('isExtesionConfigured', true);
                         vscode.commands.executeCommand('lambdasView.refresh');
                         this.panel?.dispose();
+                        break;
+                    case 'addStageSupport':
+                        this.context.workspaceState.update('stageSupport', message.text);
+                        vscode.commands.executeCommand('setContext', 'stageSupport', message.text);
+                        if (this.panel) {
+                            this.panel.webview.html = this.getWebContentSettings();
+                        }
+                        break;
+                    case 'addStage':
+                        stageList = this.context.workspaceState.get('stageList') || [];
+                        stageList.push(message.text);
+                        this.context.workspaceState.update('stageList', stageList);
+                        // vscode.commands.executeCommand('lambdasView.refresh');
+                        if (this.panel) {
+                            this.panel.webview.html = this.getWebContentSettings();
+                        }
+                        break;
+                    case 'deleteStage':
+                        stageList = this.context.workspaceState.get('stageList') || [];
+                        stageList = stageList.filter(stage => stage !== message.text);
+                        this.context.workspaceState.update('stageList', stageList);
+                        if (this.panel) {
+                            this.panel.webview.html = this.getWebContentSettings();
+                        }
+                        break;
+
+                    case 'test':
+                        console.log('valor => ' + message.text);
+                        break;
                 }
             },
             undefined,
@@ -65,13 +95,17 @@ export class SettingsView {
 
     private getConfigs() {
         let prefixName = this.context.workspaceState.get('prefixName');
+        let stageSupport: boolean = this.context.workspaceState.get('stageSupport') || false;
         const serverlessSupport = this.getServerlessSuport();
+        const stageList: string[] | undefined = this.context.workspaceState.get('stageList');
         if (!prefixName && serverlessSupport?.available) {
             prefixName = serverlessSupport.serviceName;
         }
         return {
             prefixName,
-            serverlessSupport: serverlessSupport?.available
+            serverlessSupport: serverlessSupport?.available,
+            stageList,
+            stageSupport
         };
     }
 
@@ -87,12 +121,31 @@ export class SettingsView {
                 <BODY>
                     <script>
                     const vscode = acquireVsCodeApi();
+                    function removeStage(stage) {
+                        vscode.postMessage({
+                            command: 'deleteStage',
+                            text: stage
+                        });
+                    }                                    
                     function save() {
                         vscode.postMessage({
                             command: 'save',
                             text: document.getElementById("prefix").value
                         });
                     }
+                    function checkStage(){
+                        var checked = document.getElementById("checkStage").checked;
+                        vscode.postMessage({
+                            command: 'addStageSupport',
+                            text: checked
+                        });
+                    }
+                    function addStage() {
+                        vscode.postMessage({
+                            command: 'addStage',
+                            text: document.getElementById("newStageName").value
+                        });
+                    } 
                 </script>
     
                     <center><h1>Lambda Assistant - Settings</h1></center>
@@ -106,12 +159,43 @@ export class SettingsView {
                                 <td colspan=2></td>
                             </tr>
                         </table>
+                        <table>
+                            <tr>
+                                <td><input type="checkbox" ${config.stageSupport ? 'checked' : ''} id="checkStage" onclick="checkStage()"></td>
+                                <td>Add stages support</td>
+                            </tr>
+                        </table>
+                        <table style="display: ${config.stageSupport ? '' : 'none'}">
+                            <tr>
+                                <td><input type="text" id="newStageName"></td>
+                                <td><button onclick="addStage()">+</button></td>
+                            </tr>
+                            ${this.getStageListHtml(config.stageList)}
+                        </table>
+
+
                         <br>
                         <button onclick="save()">Save</button>
                     </center>
                 </BODY>
+                <script>
+                    checkStage();
+                </script>
             </HTML>
         `;
+    }
+
+    private getStageListHtml(stageList: string[] | undefined): string {
+        let html = '';
+        stageList?.forEach((stage: string) => {
+            html += `
+            <tr>
+                <td>${stage}</td>
+                <td><button onclick="removeStage('${stage}')">-</button></td>
+            </tr>
+        `;
+        });
+        return html;
     }
 
 }

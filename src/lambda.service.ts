@@ -7,12 +7,22 @@ export class LambdaService {
     }
 
     public getLambdaList(): string[] | undefined {
-        return this.context.workspaceState.get('lambdaList');
+        let lambdaList: string[] | undefined= this.context.workspaceState.get('lambdaList');
+        let prefix = this.context.workspaceState.get('prefixName') as string;
+        const stageSupport = this.context.workspaceState.get('stageSupport') || false;
+        const stageList: string[] | undefined = this.context.workspaceState.get('stageList');
+        let currentStage ;
+        if (stageSupport && stageList && (stageList as string[]).length > 0){
+            currentStage = this.context.workspaceState.get('currentStage') || stageList[0];
+            prefix += '-'+currentStage;
+        }
+        const filteredList = lambdaList?.filter(obj => obj.startsWith(prefix));
+        return filteredList;
     }
 
     public async refreshData(): Promise<void> {
         const lambdaList = await this.retriveLambdaListFromAws();
-        const prefix = this.context.workspaceState.get('prefixName') as string;
+        let prefix = this.context.workspaceState.get('prefixName') as string;
         const filteredList = lambdaList.filter(obj => obj.startsWith(prefix));
         this.context.workspaceState.update('lambdaList', filteredList);
     }
