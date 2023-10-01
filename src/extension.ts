@@ -4,11 +4,12 @@ import { LambdaService } from './lambda.service';
 
 
 import { SettingsView } from './settings.view';
+import { FunctionSettingsView } from './function-settings.view';
+import { LambdaData } from './lambda-data.interface';
+import { InvokeView } from './view/invoke.view';
 
 export function activate(context: vscode.ExtensionContext) {
-
 	addViews(context).then();
-	
 }
 
 
@@ -45,38 +46,48 @@ async function addViews(context: vscode.ExtensionContext): Promise<void> {
 	const isConfigured = context.workspaceState.get('isExtesionConfigured') || false;
 	vscode.commands.executeCommand('setContext', 'isExtesionConfigured', isConfigured);
 	
-
-
-
-	
 	const settingsView = new SettingsView(context);
 	let openSettingsButonDisposable = vscode.commands.registerCommand('lambdaAssistant.openSettings', async () => {
-
-
-
-
-		
-		
-		
-		
 		settingsView.openView();
 	});
 	context.subscriptions.push(openSettingsButonDisposable);
 
+	const functionSettingsView = new FunctionSettingsView(context);
+	let openFunctionsSettingsButonDisposable = vscode.commands.registerCommand('lambdaAssistant.openFunctionSettings', async (lambdaItem) => {
+		functionSettingsView.openView(lambdaItem.lambdaData);
+	});
+	context.subscriptions.push(openFunctionsSettingsButonDisposable);
+
+	const invokeView = new InvokeView(context);
+	let invokeButonDisposable = vscode.commands.registerCommand('lambdaItem.invoke', async (lambdaItem) => {
+		invokeView.openView(lambdaItem.lambdaData);
+	});
+	context.subscriptions.push(invokeButonDisposable);
+
+
+
 
 	let showLogDisposable = vscode.commands.registerCommand('lambdaItem.showLog', async (lambdaItem) => {
+		// console.log('lambdaItem => '+ JSON.stringify(lambdaItem, undefined, 2));
 		const lambdaName = lambdaItem.label;
 		const terminal = vscode.window.createTerminal('Log: ' + lambdaName);
-		// aws logs tail /aws/lambda/dominio-functions-dev-api --since 5d --follow
-		terminal.sendText(`aws logs tail /aws/lambda/${lambdaName} --since 5d --follow`);
+		const logTimeString = context.workspaceState.get('logTimeString') || '4h';
+		terminal.sendText(`aws logs tail /aws/lambda/${lambdaName} --since ${logTimeString} --follow`);
 		terminal.show();
-		// console.log('Valor => ' + JSON.stringify(lambdaItem));
-		// const terminal = vscode.window.createTerminal(''));
-		// const list = await lambdaService.refreshData();
-		// lambdaProvider.refresh(lambdaService.getLambdaList());
-
 	});
 	context.subscriptions.push(showLogDisposable);
+
+	let deployButtonDisposable = vscode.commands.registerCommand('lambdaItem.deploy', async (lambdaItem) => {
+		let localLambdaList = context.workspaceState.get('lambdaList') as LambdaData[];
+		const localLambda = localLambdaList.find((item) => item.functionName === lambdaItem.lambdaData.functionName);
+		const serverlessName = localLambda?.serverlessName;
+		const terminal = vscode.window.createTerminal('Deploy: ' + serverlessName);
+		const stageSupport = context.workspaceState.get('stageSupport')
+		const currentStage = context.workspaceState.get('currentStage');
+		terminal.sendText(`serverless deploy function -f ${serverlessName} --verbose ${ stageSupport ? '--stage ' + currentStage : ''}`);
+		terminal.show();
+	});
+	context.subscriptions.push(deployButtonDisposable);	
 
 
 }

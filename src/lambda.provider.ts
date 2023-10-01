@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { LambdaData } from './lambda-data.interface';
 
 export class LambdaProvider implements vscode.TreeDataProvider<LambdaItem> {
 
@@ -7,11 +8,11 @@ export class LambdaProvider implements vscode.TreeDataProvider<LambdaItem> {
 
     data: LambdaItem[] | undefined;
 
-    constructor(lambdaList: string[] | undefined) {
+    constructor(lambdaList: LambdaData[] | undefined) {
         this.data = this.getDataFromLambdaList(lambdaList);
     }
 
-    private getDataFromLambdaList(lambdaList: string[] | undefined): LambdaItem[] | undefined {
+    private getDataFromLambdaList(lambdaList: LambdaData[] | undefined): LambdaItem[] | undefined {
         let data;
         if (lambdaList && lambdaList.length > 0) {
             data = [];
@@ -24,7 +25,7 @@ export class LambdaProvider implements vscode.TreeDataProvider<LambdaItem> {
         return element;
     }
 
-    refresh(lambdaList: string[] | undefined): void {
+    refresh(lambdaList: LambdaData[] | undefined): void {
         this.data = this.getDataFromLambdaList(lambdaList);
         this._onDidChangeTreeData.fire();
     }
@@ -38,10 +39,10 @@ export class LambdaProvider implements vscode.TreeDataProvider<LambdaItem> {
 
 class LambdaItem extends vscode.TreeItem {
     constructor(
-        public readonly label: string,
+        public lambdaData: LambdaData,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState
     ) {
-        super(label, collapsibleState);
+        super(lambdaData.functionName, collapsibleState);
     }
 }
 

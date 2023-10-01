@@ -26,6 +26,14 @@
         "title": "Show Log"
       },
       {
+        "command": "lambdaItem.invoke",
+        "title": "Invoke"
+      },
+      {
+        "command": "lambdaAssistant.openFunctionSettings",
+        "title": "Function Settings"
+      },
+      {
         "command": "lambdasView.updateStage",
         "title": "Change Stage"
       },
@@ -39,8 +47,8 @@
         "icon": {
           "dark": "resources/settings.svg",
           "light": "resources/settings.svg"
-        }        
-      }      
+        }
+      }
     ],
     "viewsContainers": {
       "activitybar": [
@@ -75,7 +83,7 @@
         {
           "command": "lambdasView.updateStage",
           "when": "view == lambdasView && stageSupport"
-        }        
+        }
       ],
       "view/item/context": [
         {
@@ -83,7 +91,15 @@
           "when": "view == lambdasView"
         },
         {
+          "command": "lambdaAssistant.openFunctionSettings",
+          "when": "view == lambdasView"
+        },
+        {
           "command": "lambdaItem.deploy",
+          "when": "view == lambdasView"
+        },
+        {
+          "command": "lambdaItem.invoke",
           "when": "view == lambdasView"
         }
       ]
@@ -120,7 +136,7 @@
     "typescript": "^5.1.3"
   },
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.379.1",
+    "@aws-sdk/client-lambda": "^3.421.0",
     "js-yaml": "^4.1.0"
   }
 }

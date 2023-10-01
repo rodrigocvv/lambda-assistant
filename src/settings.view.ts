@@ -2,10 +2,16 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { load } from "js-yaml";
+import { SettingHtml } from './settings.html';
+import { SettingsConfig } from './settings-config.interface';
 
 export class SettingsView {
 
-    constructor(private context: vscode.ExtensionContext) { }
+    settingsHtml: SettingHtml;
+
+    constructor(private context: vscode.ExtensionContext) {
+        this.settingsHtml = new SettingHtml();
+    }
 
     panel: vscode.WebviewPanel | undefined;
 
@@ -28,12 +34,20 @@ export class SettingsView {
                     case 'save':
                         this.context.workspaceState.update('prefixName', message.text);
                         this.context.workspaceState.update('isExtesionConfigured', true);
+                        vscode.commands.executeCommand('setContext', 'isExtesionConfigured', true);
                         vscode.commands.executeCommand('lambdasView.refresh');
                         this.panel?.dispose();
                         break;
                     case 'addStageSupport':
                         this.context.workspaceState.update('stageSupport', message.text);
                         vscode.commands.executeCommand('setContext', 'stageSupport', message.text);
+                        if (this.panel) {
+                            this.panel.webview.html = this.getWebContentSettings();
+                        }
+                        break;
+                    case 'addServerlessSupport':
+                        this.context.workspaceState.update('serverlessSupport', message.text);
+                        vscode.commands.executeCommand('setContext', 'serverlessSupport', message.text);
                         if (this.panel) {
                             this.panel.webview.html = this.getWebContentSettings();
                         }
@@ -55,10 +69,6 @@ export class SettingsView {
                             this.panel.webview.html = this.getWebContentSettings();
                         }
                         break;
-
-                    case 'test':
-                        console.log('valor => ' + message.text);
-                        break;
                 }
             },
             undefined,
@@ -75,26 +85,35 @@ export class SettingsView {
     }
 
     private getServerlessSuport() {
-        if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0]) {
-            const fileFolder = vscode?.workspace?.workspaceFolders[0]?.uri.fsPath;
-            const filePath = path.join(fileFolder, 'serverless.yml');
-            if (fs.existsSync(filePath)) {
-                const fileContent = fs.readFileSync(filePath, 'utf8');
-                const serviceName = (load(fileContent) as any).service;
-                return {
-                    available: true,
-                    serviceName
-                };
-            } else {
-                return {
-                    available: false
-                };
+        let serverlessSupport = this.context.workspaceState.get('serverlessSupport');
+        if (serverlessSupport == null || serverlessSupport == undefined) {
+            if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0]) {
+                const fileFolder = vscode?.workspace?.workspaceFolders[0]?.uri.fsPath;
+                const filePath = path.join(fileFolder, 'serverless.yml');
+                if (fs.existsSync(filePath)) {
+                    const fileContent = fs.readFileSync(filePath, 'utf8');
+                    const serviceName = (load(fileContent) as any).service;
+                    return {
+                        available: true,
+                        serviceName
+                    };
+                } else {
+                    return {
+                        available: false
+                    };
+                }
             }
         }
+        return {
+            available: serverlessSupport
+        };
+
     }
 
-    private getConfigs() {
-        let prefixName = this.context.workspaceState.get('prefixName');
+    private getConfigs(): SettingsConfig {
+        let prefixName: string = this.context.workspaceState.get('prefixName') || '';
+        let logTimeString: string = this.context.workspaceState.get('logTimeString') || '4h';
+        const servelessDeployParams: string = this.context.workspaceState.get('servelessDeployParams') || '';
         let stageSupport: boolean = this.context.workspaceState.get('stageSupport') || false;
         const serverlessSupport = this.getServerlessSuport();
         const stageList: string[] | undefined = this.context.workspaceState.get('stageList');
@@ -103,99 +122,19 @@ export class SettingsView {
         }
         return {
             prefixName,
-            serverlessSupport: serverlessSupport?.available,
-            stageList,
-            stageSupport
+            serverlessSupport: serverlessSupport?.available as boolean || false,
+            stageList: stageList || [],
+            stageSupport,
+            servelessDeployParams,
+            logTimeString
         };
     }
 
     private getWebContentSettings() {
         const config = this.getConfigs();
-        return `
-            <HTML>
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Settings</title>
-                </head>
-                <BODY>
-                    <script>
-                    const vscode = acquireVsCodeApi();
-                    function removeStage(stage) {
-                        vscode.postMessage({
-                            command: 'deleteStage',
-                            text: stage
-                        });
-                    }                                    
-                    function save() {
-                        vscode.postMessage({
-                            command: 'save',
-                            text: document.getElementById("prefix").value
-                        });
-                    }
-                    function checkStage(){
-                        var checked = document.getElementById("checkStage").checked;
-                        vscode.postMessage({
-                            command: 'addStageSupport',
-                            text: checked
-                        });
-                    }
-                    function addStage() {
-                        vscode.postMessage({
-                            command: 'addStage',
-                            text: document.getElementById("newStageName").value
-                        });
-                    } 
-                </script>
-    
-                    <center><h1>Lambda Assistant - Settings</h1></center>
-                    <center>
-                        <table>
-                            <tr>
-                                <td>Lambda Prefix Name</td>
-                                <td><input type="text" id="prefix" value="${config.prefixName}"></td>
-                            </tr>
-                            <tr>
-                                <td colspan=2></td>
-                            </tr>
-                        </table>
-                        <table>
-                            <tr>
-                                <td><input type="checkbox" ${config.stageSupport ? 'checked' : ''} id="checkStage" onclick="checkStage()"></td>
-                                <td>Add stages support</td>
-                            </tr>
-                        </table>
-                        <table style="display: ${config.stageSupport ? '' : 'none'}">
-                            <tr>
-                                <td><input type="text" id="newStageName"></td>
-                                <td><button onclick="addStage()">+</button></td>
-                            </tr>
-                            ${this.getStageListHtml(config.stageList)}
-                        </table>
-
-
-                        <br>
-                        <button onclick="save()">Save</button>
-                    </center>
-                </BODY>
-                <script>
-                    checkStage();
-                </script>
-            </HTML>
-        `;
+        return this.settingsHtml.getWebContentSettings(config);
     }
 
-    private getStageListHtml(stageList: string[] | undefined): string {
-        let html = '';
-        stageList?.forEach((stage: string) => {
-            html += `
-            <tr>
-                <td>${stage}</td>
-                <td><button onclick="removeStage('${stage}')">-</button></td>
-            </tr>
-        `;
-        });
-        return html;
-    }
+
 
 }
