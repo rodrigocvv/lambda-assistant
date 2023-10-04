@@ -3,10 +3,10 @@ import { LambdaProvider } from './lambda.provider';
 import { LambdaService } from './lambda.service';
 
 
-import { SettingsView } from './settings.view';
-import { FunctionSettingsView } from './function-settings.view';
-import { LambdaData } from './lambda-data.interface';
+import { FunctionSettingsView } from './view/function-settings.view';
 import { InvokeView } from './view/invoke.view';
+import { SettingsView } from './view/settings.view';
+import { LambdaData } from './intefaces/lambda-data.interface';
 
 export function activate(context: vscode.ExtensionContext) {
 	addViews(context).then();

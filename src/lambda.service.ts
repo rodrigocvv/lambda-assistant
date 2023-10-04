@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { LambdaClient, ListFunctionsCommand, FunctionConfiguration, ListFunctionsRequest } from "@aws-sdk/client-lambda";
-import { LambdaData } from './lambda-data.interface';
+import { LambdaData } from './intefaces/lambda-data.interface';
 
 export class LambdaService {
 

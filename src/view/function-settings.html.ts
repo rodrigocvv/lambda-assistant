@@ -1,5 +1,4 @@
-import { LambdaData } from "./lambda-data.interface";
-import { SettingsConfig } from "./settings-config.interface";
+import { LambdaData } from "../intefaces/lambda-data.interface";
 
 export class FunctionsSettingsHtml {
     public getWebViewHtml(lambdaData: LambdaData) {

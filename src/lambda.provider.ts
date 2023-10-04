@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { LambdaData } from './lambda-data.interface';
+import { LambdaData } from './intefaces/lambda-data.interface';
 
 export class LambdaProvider implements vscode.TreeDataProvider<LambdaItem> {
 

@@ -3,7 +3,7 @@ import { load } from "js-yaml";
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { FunctionsSettingsHtml } from './function-settings.html';
-import { LambdaData } from './lambda-data.interface';
+import { LambdaData } from '../intefaces/lambda-data.interface';
 
 export class FunctionSettingsView {
 

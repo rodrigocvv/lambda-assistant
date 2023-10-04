@@ -3,6 +3,12 @@ export interface LambdaData {
     lastModified?: Date;
     functionArn: string;
     serverlessName?: string;
-    invokeData?: string;
+    invokeData?: InvokeData[];
     isActive?: boolean;
+}
+
+export interface InvokeData {
+    name: string;
+    isLocal: boolean;
+    data: string;
 }

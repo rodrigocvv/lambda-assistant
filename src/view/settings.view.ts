@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { load } from "js-yaml";
 import { SettingHtml } from './settings.html';
-import { SettingsConfig } from './settings-config.interface';
+import { SettingsConfig } from '../intefaces/settings-config.interface';
 
 export class SettingsView {
 

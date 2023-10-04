@@ -1,4 +1,4 @@
-import { SettingsConfig } from "./settings-config.interface";
+import { SettingsConfig } from "../intefaces/settings-config.interface";
 
 export class SettingHtml {
     public getWebContentSettings(config: SettingsConfig) {

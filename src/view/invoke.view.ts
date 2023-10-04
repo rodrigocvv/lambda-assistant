@@ -1,10 +1,7 @@
-import * as fs from 'fs';
-import { load } from "js-yaml";
-import * as path from 'path';
-import * as vscode from 'vscode';
-import { InvokeHtml } from './invoke.html';
-import { LambdaData } from '../lambda-data.interface';
 import { InvokeCommand, InvokeCommandInput, InvokeCommandOutput, LambdaClient } from '@aws-sdk/client-lambda';
+import * as vscode from 'vscode';
+import { InvokeData, LambdaData } from '../intefaces/lambda-data.interface';
+import { InvokeHtml } from './invoke.html';
 
 export class InvokeView {
 
@@ -25,24 +22,47 @@ export class InvokeView {
 
     private createPanel(lambdaData: LambdaData) {
         this.panel = vscode.window.createWebviewPanel('Invoke' + lambdaData.functionName, 'Invoke ' + lambdaData.functionName, vscode.ViewColumn.One,
-            { enableScripts: true });
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true
+            });
 
         this.panel.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined);
 
         this.panel.webview.onDidReceiveMessage(
             message => {
+                let localLambdaList = this.context.workspaceState.get('lambdaList') as LambdaData[];
+                const lambdaLocal = localLambdaList.find((item) => item.functionName === lambdaData.functionName);
+
                 switch (message.command) {
+
+                    case 'changeName':
+                        this.invokeHtml.selectedData = message.text;
+                        this.panel!.webview.html = this.invokeHtml.getWebViewHtml(lambdaLocal!, undefined);
+                        break;
                     case 'save':
-                        // console.log('message => ' + JSON.stringify(message, undefined, 2));
                         let data = message.text;
                         const isLocal = message.invokeLocal;
-                        let localLambdaList = this.context.workspaceState.get('lambdaList') as LambdaData[];
-                        // console.log('localLambdaList 1 => '+ JSON.stringify(localLambdaList, undefined, 2));
-                        const lambdaLocal = localLambdaList.find((item) => item.functionName === lambdaData.functionName);
-                        lambdaLocal!.invokeData = message.text && message.text.trim().length > 0 ? message.text : undefined;
-                        // console.log('localLambdaList 2 => '+ JSON.stringify(localLambdaList, undefined, 2));
+                        const invokeData: InvokeData = {
+                            data,
+                            isLocal,
+                            name: message.name
+                        };
+                        if (lambdaLocal!.invokeData) {
+                            const oldData = lambdaLocal!.invokeData.find(obj => obj.name === invokeData.name);
+                            if (oldData) {
+                                oldData.data = data;
+                                oldData.isLocal = isLocal;
+                            } else {
+                                lambdaLocal!.invokeData.push(invokeData);
+                            }
+                        } else {
+                            lambdaLocal!.invokeData = [invokeData];
+                        }
+                        // console.log('lambdaLocal => ' + JSON.stringify(lambdaLocal, undefined, 2));
                         this.context.workspaceState.update('lambdaList', localLambdaList);
                         data = data.replaceAll('\n', '');
+                        data = data.replaceAll('\t', '');
                         if (isLocal) {
                             const terminal = vscode.window.createTerminal('Invoke: ' + lambdaData.functionName);
                             const stageSupport = this.context.workspaceState.get('stageSupport')
@@ -80,12 +100,14 @@ export class InvokeView {
 
         this.panel.onDidDispose(
             () => {
+                console.log('onDispose!');
                 this.panel = undefined;
             },
             null,
             undefined
         );
     }
+
 
 
 
