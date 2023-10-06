@@ -9,6 +9,18 @@ export class InvokeHtml {
         return `
             <HTML>
                 <head>
+                    <style>
+                        .form-button {
+                            background: #0066A2;
+                            color: white;
+                            border-style: outset;
+                            border-color: #0066A2;
+                            height: 50px;
+                            width: 100px;
+                            font: bold15px arial,sans-serif;
+                            text-shadow: none;
+                        }
+                    </style>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>Settings</title>
@@ -22,6 +34,16 @@ export class InvokeHtml {
                         const name = document.getElementById("invokeName").value;
                         vscode.postMessage({ command: 'save', text: data, invokeLocal: invokeLocal ? true: false, name });
                     }
+                    function invokeAws() {
+                        const data = document.getElementById("invokeData").value;
+                        const name = document.getElementById("invokeName").value;
+                        vscode.postMessage({ command: 'invokeAws', text: data, invokeName: name });
+                    }                    
+                    function invokeLocal() {
+                        const data = document.getElementById("invokeData").value;
+                        const name = document.getElementById("invokeName").value;
+                        vscode.postMessage({ command: 'invokeLocal', text: data, invokeName: name });
+                    }                    
                     function changeName(obj) {
                         const name = obj.value;
                         // document.getElementById("invokeData").value = name;
@@ -36,29 +58,32 @@ export class InvokeHtml {
     
                     <center><h1>${lambdaData.functionName}</h1></center>
                     <br><br>
-                    <select name="invokeName" id="invokeName" onchange="changeName(this)">
-                        <option value="request1" ${this.selectedData === 'request1' ? 'selected' : ''}>request1</option>
-                        <option value="request2" ${this.selectedData === 'request2' ? 'selected' : ''}>request2</option>
-                        <option value="request3" ${this.selectedData === 'request3' ? 'selected' : ''}>request3</option>                        
-                    </select>
                     <br>
                     <center>
                         <table>
                             <tr>
-                                <td colspan=2>Data:  </td>
-                            </tr>
                                 <td colspan=2>
-                                    <textarea id="invokeData" rows="20" cols="120">${this.getSelectedData(lambdaData) || this.getDefaultData()}</textarea>                                
+                                    <select name="invokeName" id="invokeName" onchange="changeName(this)">
+                                        <option value="request1" ${this.selectedData === 'request1' ? 'selected' : ''}>request1</option>
+                                        <option value="request2" ${this.selectedData === 'request2' ? 'selected' : ''}>request2</option>
+                                        <option value="request3" ${this.selectedData === 'request3' ? 'selected' : ''}>request3</option>                        
+                                    </select>
                                 </td>
                             </tr>
-                            <tr>
-                                <td><input readonly type="checkbox" checked id="invokeLocal"></td>
-                                <td>Invoke Local</td>
+                                <td>
+                                    <textarea id="invokeData" rows="20" cols="70">${this.getSelectedData(lambdaData) || this.getDefaultData()}</textarea>                                
+                                </td>
+                                <td>
+                                    <label>${this.getInvokeResponseText(invokeResponse)}</label>
+                                </td>
                             </tr>
                         </table>
                         <br>
-                        <button onclick="format()">Format</button> - <button onclick="save()">Invoke</button>
-                        ${this.getInvokeResponseText(invokeResponse)}
+                        <button onclick="format()">Format</button>
+                        <br>
+                        <button style="margin-right: 300px;" class="form-button" onclick="invokeLocal()">Invoke Local</button>
+                        <button class="form-button" onclick="invokeAws()">Invoke AWS</button>
+                        
                     </center>
                 </BODY>
                 <script>
@@ -68,13 +93,43 @@ export class InvokeHtml {
         `;
     }
 
+    public getLoader(): string {
+        return `
+        <HTML>
+            <HEAD>
+                <style>
+                    .loader {
+                        border: 16px solid #f3f3f3; /* Light grey */
+                        border-top: 16px solid #3498db; /* Blue */
+                        border-radius: 50%;
+                        width: 120px;
+                        height: 120px;
+                        animation: spin 2s linear infinite;
+                    }
+                    
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+            </HEAD>
+            <BODY>
+                <BR><BR><BR><BR><BR><BR><BR>
+                <CENTER>
+                    <div class="loader"></div>
+                </CENTER>
+            </BODY>
+        </HTML>
+        `;
+    }
+
     private getSelectedData(lambdaData: LambdaData) {
-        console.log('p1');
+        // console.log('p1');
         let invokeContent: InvokeData | undefined;
-        if (this.selectedData && lambdaData.invokeData && lambdaData.invokeData.length > 0){
+        if (this.selectedData && lambdaData.invokeData && lambdaData.invokeData.length > 0 && lambdaData.invokeData && Array.isArray(lambdaData.invokeData)) {
             invokeContent = lambdaData.invokeData.find((obj) => obj.name === this.selectedData);
         }
-        console.log('p2 - ' + invokeContent?.data);
+        // console.log('p2 - ' + invokeContent?.data);
         return invokeContent?.data;
     }
 

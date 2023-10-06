@@ -26,8 +26,9 @@ async function addViews(context: vscode.ExtensionContext): Promise<void> {
 	context.subscriptions.push(lambdaDisposable);
 	
 	let refreshLmabdaButonDisposable = vscode.commands.registerCommand('lambdasView.refresh', async () => {
-		const list = await lambdaService.refreshData();
+		await lambdaService.refreshData();
 		lambdaProvider.refresh(lambdaService.getLambdaList());
+
 	});
 	context.subscriptions.push(refreshLmabdaButonDisposable);
 
@@ -36,7 +37,8 @@ async function addViews(context: vscode.ExtensionContext): Promise<void> {
 		const stageList: string[] = context.workspaceState.get('stageList') || [];
 		const stage = await vscode.window.showQuickPick(stageList, {canPickMany: false, title: "Select you stage:"});
 		context.workspaceState.update('currentStage', stage);
-		lambdaProvider.refresh(lambdaService.getLambdaList());
+		// lambdaProvider.refresh(lambdaService.getLambdaList());
+		// lambdaProvider.refresh(lambdaService);
 		// vscode.commands.executeCommand('lambdasView.refresh');
 	});
 	context.subscriptions.push(changeStageButonDisposable);	

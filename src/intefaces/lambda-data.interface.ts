@@ -9,6 +9,6 @@ export interface LambdaData {
 
 export interface InvokeData {
     name: string;
-    isLocal: boolean;
+    isLocal?: boolean;
     data: string;
 }

@@ -27,6 +27,7 @@ export class InvokeView {
                 retainContextWhenHidden: true
             });
 
+        // this.panel!.webview!.html = this.invokeHtml.getLoader();
         this.panel.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined);
 
         this.panel.webview.onDidReceiveMessage(
@@ -40,57 +41,13 @@ export class InvokeView {
                         this.invokeHtml.selectedData = message.text;
                         this.panel!.webview.html = this.invokeHtml.getWebViewHtml(lambdaLocal!, undefined);
                         break;
-                    case 'save':
-                        let data = message.text;
-                        const isLocal = message.invokeLocal;
-                        const invokeData: InvokeData = {
-                            data,
-                            isLocal,
-                            name: message.name
-                        };
-                        if (lambdaLocal!.invokeData) {
-                            const oldData = lambdaLocal!.invokeData.find(obj => obj.name === invokeData.name);
-                            if (oldData) {
-                                oldData.data = data;
-                                oldData.isLocal = isLocal;
-                            } else {
-                                lambdaLocal!.invokeData.push(invokeData);
-                            }
-                        } else {
-                            lambdaLocal!.invokeData = [invokeData];
-                        }
-                        // console.log('lambdaLocal => ' + JSON.stringify(lambdaLocal, undefined, 2));
-                        this.context.workspaceState.update('lambdaList', localLambdaList);
-                        data = data.replaceAll('\n', '');
-                        data = data.replaceAll('\t', '');
-                        if (isLocal) {
-                            const terminal = vscode.window.createTerminal('Invoke: ' + lambdaData.functionName);
-                            const stageSupport = this.context.workspaceState.get('stageSupport')
-                            const currentStage = this.context.workspaceState.get('currentStage');
-                            terminal.sendText(`serverless invoke local -f ${lambdaData.serverlessName} ${stageSupport ? '--stage ' + currentStage : ''} --data ${JSON.stringify(data)}`);
-                            terminal.show();
-                        } else {
-                            try {
-
-                                const input: InvokeCommandInput = {
-                                    FunctionName: lambdaData.functionName,
-                                    InvocationType: "RequestResponse",
-                                    Payload: Buffer.from(JSON.stringify(JSON.parse(data)), "utf8"),
-                                };
-
-                                const command = new InvokeCommand(input);
-                                const client = new LambdaClient({ region: "us-east-1" });
-                                client.send(command).then((response: InvokeCommandOutput) => {
-                                    const responsePayload = JSON.parse(Buffer.from(response.Payload!).toString());
-                                    console.log('responsePayload => ' + JSON.stringify(responsePayload, undefined, 2));
-                                    // vscode.window.showInformationMessage(JSON.stringify(response, undefined, 2));
-                                    this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, responsePayload);
-                                });
-                                // const res : InvokeCommandOutput = await client.send(command);
-                            } catch (e) {
-                                console.error("error triggering function", e as Error);
-                            }
-                        }
+                    case 'invokeAws':
+                        this.saveInvoke(localLambdaList, lambdaLocal!, message.text, message.invokeName);
+                        this.invokeLambdaAws(message.text, lambdaData);
+                        break;
+                    case 'invokeLocal':
+                        this.saveInvoke(localLambdaList, lambdaLocal!, message.text, message.invokeName);
+                        this.invokeLambdaLocal(message.text, lambdaData);
                         break;
                 }
             },
@@ -100,12 +57,67 @@ export class InvokeView {
 
         this.panel.onDidDispose(
             () => {
-                console.log('onDispose!');
                 this.panel = undefined;
             },
             null,
             undefined
         );
+    }
+
+    private invokeLambdaLocal(data: string, lambdaData: LambdaData): void {
+        data = data.replaceAll('\n', '');
+        data = data.replaceAll('\t', '');
+        const terminal = vscode.window.createTerminal('Invoke: ' + lambdaData.functionName);
+        const stageSupport = this.context.workspaceState.get('stageSupport')
+        const currentStage = this.context.workspaceState.get('currentStage');
+        terminal.sendText(`serverless invoke local -f ${lambdaData.serverlessName} ${stageSupport ? '--stage ' + currentStage : ''} --data ${JSON.stringify(data)}`);
+        terminal.show();
+    }
+
+    private saveInvoke(localLambdaList: LambdaData[], lambdaLocal: LambdaData, data: string, invokeName: string): void {
+        const invokeData: InvokeData = {
+            data,
+            name: invokeName
+        };
+        if (lambdaLocal.invokeData) {
+            const oldData = lambdaLocal!.invokeData.find(obj => obj.name === invokeData.name);
+            if (oldData) {
+                oldData.data = data;
+            } else {
+                lambdaLocal!.invokeData.push(invokeData);
+            }
+        } else {
+            lambdaLocal!.invokeData = [invokeData];
+        }
+        // console.log('lambdaLocal => ' + JSON.stringify(lambdaLocal, undefined, 2));
+        // console.log('localLambdaList => ' + JSON.stringify(localLambdaList, undefined, 2));
+        this.context.workspaceState.update('lambdaList', localLambdaList);
+    }
+
+    private invokeLambdaAws(data: string, lambdaData: LambdaData): void {
+        try {
+            data = data.replaceAll('\n', '');
+            data = data.replaceAll('\t', '');
+
+            this.panel!.webview!.html = this.invokeHtml.getLoader();
+            const input: InvokeCommandInput = {
+                FunctionName: lambdaData.functionName,
+                InvocationType: "RequestResponse",
+                Payload: Buffer.from(JSON.stringify(JSON.parse(data)), "utf8"),
+            };
+
+            const command = new InvokeCommand(input);
+            const client = new LambdaClient({ region: "us-east-1" });
+            client.send(command).then((response: InvokeCommandOutput) => {
+                const responsePayload = JSON.parse(Buffer.from(response.Payload!).toString());
+                console.log('responsePayload => ' + JSON.stringify(responsePayload, undefined, 2));
+                // vscode.window.showInformationMessage(JSON.stringify(response, undefined, 2));
+                this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, responsePayload);
+            });
+            // const res : InvokeCommandOutput = await client.send(command);
+        } catch (e) {
+            console.error("error triggering function", e as Error);
+        }
     }
 
 
