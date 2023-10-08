@@ -65,13 +65,17 @@ export class InvokeView {
     }
 
     private invokeLambdaLocal(data: string, lambdaData: LambdaData): void {
-        data = data.replaceAll('\n', '');
-        data = data.replaceAll('\t', '');
-        const terminal = vscode.window.createTerminal('Invoke: ' + lambdaData.functionName);
-        const stageSupport = this.context.workspaceState.get('stageSupport')
-        const currentStage = this.context.workspaceState.get('currentStage');
-        terminal.sendText(`serverless invoke local -f ${lambdaData.serverlessName} ${stageSupport ? '--stage ' + currentStage : ''} --data ${JSON.stringify(data)}`);
-        terminal.show();
+        if (lambdaData.serverlessName) {
+            data = data.replaceAll('\n', '');
+            data = data.replaceAll('\t', '');
+            const terminal = vscode.window.createTerminal('Invoke: ' + lambdaData.functionName);
+            const stageSupport = this.context.workspaceState.get('stageSupport');
+            const currentStage = this.context.workspaceState.get('currentStage');
+            terminal.sendText(`serverless invoke local -f ${lambdaData.serverlessName} ${stageSupport ? '--stage ' + currentStage : ''} --data ${JSON.stringify(data)}`);
+            terminal.show();
+        } else {
+            vscode.window.showErrorMessage("For this operation you need to configure your function name(defined in serverless yaml) in functions settings.");
+        }
     }
 
     private saveInvoke(localLambdaList: LambdaData[], lambdaLocal: LambdaData, data: string, invokeName: string): void {

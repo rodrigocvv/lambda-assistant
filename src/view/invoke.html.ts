@@ -60,7 +60,7 @@ export class InvokeHtml {
                     <br><br>
                     <br>
                     <center>
-                        <table>
+                        <table style="table-layout:fixed;">
                             <tr>
                                 <td colspan=2>
                                     <select name="invokeName" id="invokeName" onchange="changeName(this)">
@@ -73,9 +73,7 @@ export class InvokeHtml {
                                 <td>
                                     <textarea id="invokeData" rows="20" cols="70">${this.getSelectedData(lambdaData) || this.getDefaultData()}</textarea>                                
                                 </td>
-                                <td>
-                                    <label>${this.getInvokeResponseText(invokeResponse)}</label>
-                                </td>
+                                ${this.getInvokeResponseText(invokeResponse)}
                             </tr>
                         </table>
                         <br>
@@ -150,10 +148,7 @@ export class InvokeHtml {
         let responseHtml = '';
         if (responseInvoke) {
             responseHtml = `
-            <br>
-            <h3>Response:</h3>
-            <br>
-            ${JSON.stringify(responseInvoke, undefined, 2)}
+            <td style="width: 500px;word-break: break-all;"><div style="margin-left:50px"><h3>Response:</h3><br>${JSON.stringify(responseInvoke, undefined, 2)}</div></td>
         `;
         }
         return responseHtml;

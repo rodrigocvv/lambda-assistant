@@ -24,7 +24,7 @@ async function addViews(context: vscode.ExtensionContext): Promise<void> {
 
 	const lambdaDisposable = vscode.window.registerTreeDataProvider('lambdasView', lambdaProvider);
 	context.subscriptions.push(lambdaDisposable);
-	
+
 	let refreshLmabdaButonDisposable = vscode.commands.registerCommand('lambdasView.refresh', async () => {
 		await lambdaService.refreshData();
 		lambdaProvider.refresh(lambdaService.getLambdaList());
@@ -35,19 +35,19 @@ async function addViews(context: vscode.ExtensionContext): Promise<void> {
 
 	let changeStageButonDisposable = vscode.commands.registerCommand('lambdasView.updateStage', async () => {
 		const stageList: string[] = context.workspaceState.get('stageList') || [];
-		const stage = await vscode.window.showQuickPick(stageList, {canPickMany: false, title: "Select you stage:"});
+		const stage = await vscode.window.showQuickPick(stageList, { canPickMany: false, title: "Select you stage:" });
 		context.workspaceState.update('currentStage', stage);
-		// lambdaProvider.refresh(lambdaService.getLambdaList());
+		lambdaProvider.refresh(lambdaService.getLambdaList());
 		// lambdaProvider.refresh(lambdaService);
 		// vscode.commands.executeCommand('lambdasView.refresh');
 	});
-	context.subscriptions.push(changeStageButonDisposable);	
+	context.subscriptions.push(changeStageButonDisposable);
 	vscode.commands.executeCommand('setContext', 'stageSupport', context.workspaceState.get('stageSupport'));
 
 
 	const isConfigured = context.workspaceState.get('isExtesionConfigured') || false;
 	vscode.commands.executeCommand('setContext', 'isExtesionConfigured', isConfigured);
-	
+
 	const settingsView = new SettingsView(context);
 	let openSettingsButonDisposable = vscode.commands.registerCommand('lambdaAssistant.openSettings', async () => {
 		settingsView.openView();
@@ -83,15 +83,20 @@ async function addViews(context: vscode.ExtensionContext): Promise<void> {
 		let localLambdaList = context.workspaceState.get('lambdaList') as LambdaData[];
 		const localLambda = localLambdaList.find((item) => item.functionName === lambdaItem.lambdaData.functionName);
 		const serverlessName = localLambda?.serverlessName;
-		const terminal = vscode.window.createTerminal('Deploy: ' + serverlessName);
-		const stageSupport = context.workspaceState.get('stageSupport')
-		const currentStage = context.workspaceState.get('currentStage');
-		terminal.sendText(`serverless deploy function -f ${serverlessName} --verbose ${ stageSupport ? '--stage ' + currentStage : ''}`);
-		terminal.show();
+		if (serverlessName) {
+			const terminal = vscode.window.createTerminal('Deploy: ' + serverlessName);
+			const stageSupport = context.workspaceState.get('stageSupport');
+			const currentStage = context.workspaceState.get('currentStage');
+			terminal.sendText(`serverless deploy function -f ${serverlessName} --verbose ${stageSupport ? '--stage ' + currentStage : ''}`);
+			terminal.show();
+		} else {
+			vscode.window.showErrorMessage("For this operation you need to configure your function name(defined in serverless yaml) in functions settings.");
+		}
+
 	});
-	context.subscriptions.push(deployButtonDisposable);	
+	context.subscriptions.push(deployButtonDisposable);
 
 
 }
 
-export function deactivate() {}
+export function deactivate() { }
