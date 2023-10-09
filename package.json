@@ -17,7 +17,7 @@
         "command": "lambdasView.refresh",
         "title": "Refresh",
         "icon": {
-          "dark": "resources/white-refresh.svg",
+          "dark": "resources/refresh-white.svg",
           "light": "resources/refresh.svg"
         }
       },
@@ -45,7 +45,7 @@
         "command": "lambdaAssistant.openSettings",
         "title": "Settings",
         "icon": {
-          "dark": "resources/settings.svg",
+          "dark": "resources/settings-white.svg",
           "light": "resources/settings.svg"
         }
       }
@@ -63,8 +63,8 @@
       "lambda-assistant-acitivity-bar": [
         {
           "id": "lambdasView",
-          "name": "Lambdas",
-          "contextualTitle": "Package xxx"
+          "name": "",
+          "contextualTitle": ""
         }
       ]
     },

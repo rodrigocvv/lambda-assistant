@@ -15,6 +15,13 @@ export class SettingsView {
 
     panel: vscode.WebviewPanel | undefined;
 
+    public registerOpenSettingsButton(viewId: string): void {
+        let openSettingsButonDisposable = vscode.commands.registerCommand(viewId, async () => {
+            this.openView();
+        });
+        this.context.subscriptions.push(openSettingsButonDisposable);
+    }
+
     public openView() {
         if (!this.panel) {
             this.createPanel();

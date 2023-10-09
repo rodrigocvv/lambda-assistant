@@ -21,6 +21,13 @@ export class FunctionSettingsView {
         }
     }
 
+    public registerOpenFunctionSettingsButton(viewId: string): void {
+        let openFunctionsSettingsButonDisposable = vscode.commands.registerCommand(viewId, async (lambdaItem) => {
+            this.openView(lambdaItem.lambdaData);
+        });
+        this.context.subscriptions.push(openFunctionsSettingsButonDisposable);
+    }
+
     private createPanel(lambdaData: LambdaData) {
         this.panel = vscode.window.createWebviewPanel('functionSettings', 'Function Settings', vscode.ViewColumn.One,
             { enableScripts: true });
@@ -81,32 +88,5 @@ export class FunctionSettingsView {
         };
 
     }
-
-    // private getConfigs(): SettingsConfig {
-    //     let prefixName: string = this.context.workspaceState.get('prefixName') || '';
-    //     let logTimeString: string = this.context.workspaceState.get('logTimeString') || '4h';
-    //     const servelessDeployParams: string = this.context.workspaceState.get('servelessDeployParams') || '';
-    //     let stageSupport: boolean = this.context.workspaceState.get('stageSupport') || false;
-    //     const serverlessSupport = this.getServerlessSuport();
-    //     const stageList: string[] | undefined = this.context.workspaceState.get('stageList');
-    //     if (!prefixName && serverlessSupport?.available) {
-    //         prefixName = serverlessSupport.serviceName;
-    //     }
-    //     return {
-    //         prefixName,
-    //         serverlessSupport: serverlessSupport?.available as boolean || false,
-    //         stageList: stageList || [],
-    //         stageSupport,
-    //         servelessDeployParams,
-    //         logTimeString
-    //     };
-    // }
-
-    // private getWebContentSettings() {
-    //     const config = this.getConfigs();
-    //     return this.settingsHtml.getWebContentSettings(config);
-    // }
-
-
 
 }

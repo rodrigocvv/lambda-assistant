@@ -20,6 +20,14 @@ export class InvokeView {
         this.createPanel(lambdaData);
     }
 
+    public registerOpenInvokeViewButton(viewId: string): void {
+        let invokeButonDisposable = vscode.commands.registerCommand(viewId, async (lambdaItem) => {
+            this.openView(lambdaItem.lambdaData);
+        });
+        this.context.subscriptions.push(invokeButonDisposable);
+    }
+
+
     private createPanel(lambdaData: LambdaData) {
         this.panel = vscode.window.createWebviewPanel('Invoke' + lambdaData.functionName, 'Invoke ' + lambdaData.functionName, vscode.ViewColumn.One,
             {

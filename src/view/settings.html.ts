@@ -33,35 +33,45 @@ export class SettingHtml {
     
                     <center><h1>Lambda Assistant - Settings</h1></center>
                     <center>
-                        <table>
+                        <table style="border:1px solid;border-radius: 10px;border-spacing: 20px;">
                             <tr>
-                                <td>Lambda Prefix Name</td>
-                                <td><input type="text" id="prefix" value="${config.prefixName}"></td>
-                            </tr>
-                            <tr>
-                                <td>Log Time</td>
-                                <td><input type="text" id="logTime" value="${config.logTimeString}"></td>
-                            </tr>                            
-                            <tr>
-                                <td colspan=2></td>
+                                <td>
+                                    <table style="">
+                                        <tr>
+                                            <td>Lambda Prefix Name</td>
+                                            <td><input type="text" id="prefix" value="${config.prefixName}"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Log Time</td>
+                                            <td><input type="text" id="logTime" value="${config.logTimeString}"></td>
+                                        </tr>                            
+                                    </table>
+                                </td>
+                                <td colspan=2 style="text-align: center;"><button onclick="save()">Save</button></td>                                
                             </tr>
                         </table>
+
+                        <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 300px;">
+                        <div style="padding-top: 20px; margin-bottom: 20px;">
                         <table>
                             <tr>
                                 <td><input type="checkbox" ${config.stageSupport ? 'checked' : ''} id="checkStage" onclick="checkStage()"></td>
                                 <td>Add stages support</td>
                             </tr>
                         </table>
-                        <table style="display: ${config.stageSupport ? '' : 'none'}">
+                        <table style="display: ${config.stageSupport ? '' : 'none'}; padding-top: 20px;">
                             <tr>
                                 <td><input type="text" id="newStageName"></td>
-                                <td><button onclick="addStage()">+</button></td>
+                                <td><button onclick="addStage()" style="width:25px;">+</button></td>
                             </tr>
                             ${this.getStageListHtml(config.stageList)}
                         </table>
+                        </div>
+                        </div>
+
                         <br>
-                        ${this.getServerlessSupportHtml(config)}
-                        <button onclick="save()">Save</button>
+                        
+                        
                     </center>
                 </BODY>
                 <script>
@@ -100,7 +110,7 @@ export class SettingHtml {
             html += `
             <tr>
                 <td>${stage}</td>
-                <td><button onclick="removeStage('${stage}')">-</button></td>
+                <td><button onclick="removeStage('${stage}')" style="width:25px;">-</button></td>
             </tr>
         `;
         });
