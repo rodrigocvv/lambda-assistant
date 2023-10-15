@@ -1,8 +1,14 @@
 {
-  "name": "lambda-assistant",
-  "displayName": "lambda assistant",
-  "description": "",
+  "name": "serverless-assistant",
+  "displayName": "Serverless Assistant",
+  "description": "Deploy and invoke your lambdas",
+  "publisher": "Rodrigo Villela",
+  "icon": "resources/ext_red.png",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rodrigocvv/lambda-assistant"
+  },
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -55,7 +61,7 @@
         {
           "id": "lambda-assistant-acitivity-bar",
           "title": "Lambda Assistant",
-          "icon": "resources/main-icon.svg"
+          "icon": "resources/Logoext_iconExt_v2.png"
         }
       ]
     },
