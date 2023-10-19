@@ -6,7 +6,20 @@ import { SettingsView } from './view/settings.view';
 
 export function activate(context: vscode.ExtensionContext) {
 	addInitialSettings(context);
-	addViews(context).then();
+	const lambdaService = new LambdaService(context);
+	const settingsView = new SettingsView(context);
+	const functionSettingsView = new FunctionSettingsView(context);
+	const invokeView = new InvokeView(context);
+
+	lambdaService.registerDataProvider('lambdasView');
+	lambdaService.registerDataRefreshButton('lambdasView.refresh');
+	lambdaService.registerChangeStageButton('lambdasView.updateStage');
+	lambdaService.registerChangeProfileButton('lambdasView.changeAwsProfile');
+	lambdaService.registerDeployButton('lambdaItem.deploy');
+	lambdaService.registerShowLogButton('lambdaItem.showLog');
+	settingsView.registerOpenSettingsButton('lambdaAssistant.openSettings');
+	functionSettingsView.registerOpenFunctionSettingsButton('lambdaAssistant.openFunctionSettings');
+	invokeView.registerOpenInvokeViewButton('lambdaItem.invoke');
 }
 
 async function addViews(context: vscode.ExtensionContext): Promise<void> {
@@ -18,6 +31,7 @@ async function addViews(context: vscode.ExtensionContext): Promise<void> {
 	lambdaService.registerDataProvider('lambdasView');
 	lambdaService.registerDataRefreshButton('lambdasView.refresh');
 	lambdaService.registerChangeStageButton('lambdasView.updateStage');
+	lambdaService.registerChangeProfileButton('lambdasView.changeAwsProfile');
 	lambdaService.registerDeployButton('lambdaItem.deploy');
 	lambdaService.registerShowLogButton('lambdaItem.showLog');
 	settingsView.registerOpenSettingsButton('lambdaAssistant.openSettings');

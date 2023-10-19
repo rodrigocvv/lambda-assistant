@@ -4,13 +4,16 @@ import * as path from 'path';
 import { load } from "js-yaml";
 import { SettingHtml } from './settings.html';
 import { SettingsConfig } from '../intefaces/settings-config.interface';
+import { AwsData } from '../intefaces/lambda-data.interface';
 
 export class SettingsView {
 
     settingsHtml: SettingHtml;
+    logoPath;
 
     constructor(private context: vscode.ExtensionContext) {
         this.settingsHtml = new SettingHtml();
+        this.logoPath = vscode.Uri.joinPath(context.extensionUri, 'resources', 'ext_red.png');
     }
 
     panel: vscode.WebviewPanel | undefined;
@@ -29,8 +32,8 @@ export class SettingsView {
     }
 
     private createPanel() {
-        this.panel = vscode.window.createWebviewPanel('settings', 'Lambda Assistant Settings', vscode.ViewColumn.One,
-            { enableScripts: true });
+        this.panel = vscode.window.createWebviewPanel('settings', 'Workspace Settings', vscode.ViewColumn.One,
+            { enableScripts: true, retainContextWhenHidden: true });
 
         this.panel.webview.html = this.getWebContentSettings();
 
@@ -43,7 +46,16 @@ export class SettingsView {
                         this.context.workspaceState.update('isExtesionConfigured', true);
                         vscode.commands.executeCommand('setContext', 'isExtesionConfigured', true);
                         vscode.commands.executeCommand('lambdasView.refresh');
-                        this.panel?.dispose();
+                        vscode.window.showInformationMessage('Data saved!');
+                        break;
+                    case 'addNewProfile':
+                        this.addNewProfile(message.profileName);
+                        this.panel!.webview.html = this.getWebContentSettings();
+                        break;
+                    case 'removeProfile':
+                        this.removeAwsProfile(message.profileName).finally(() => {
+                            this.panel!.webview.html = this.getWebContentSettings();
+                        });
                         break;
                     case 'addStageSupport':
                         this.context.workspaceState.update('stageSupport', message.text);
@@ -63,7 +75,6 @@ export class SettingsView {
                         stageList = this.context.workspaceState.get('stageList') || [];
                         stageList.push(message.text);
                         this.context.workspaceState.update('stageList', stageList);
-                        // vscode.commands.executeCommand('lambdasView.refresh');
                         if (this.panel) {
                             this.panel.webview.html = this.getWebContentSettings();
                         }
@@ -75,6 +86,17 @@ export class SettingsView {
                         if (this.panel) {
                             this.panel.webview.html = this.getWebContentSettings();
                         }
+                        break;
+                    case 'updateProfile':
+                        this.updateProfileName(message.profileName).then(() => {
+                            this.panel!.webview.html = this.getWebContentSettings();
+                        });
+                        break;
+                    case 'changeRegion':
+                        this.changeRegion().then(() => {
+                            vscode.window.showInformationMessage('Region Changed!');
+                            this.panel!.webview.html = this.getWebContentSettings();
+                        });
                         break;
                 }
             },
@@ -89,6 +111,33 @@ export class SettingsView {
             null,
             undefined
         );
+    }
+
+    async changeRegion(): Promise<void> {
+        const newAwsRegion = await vscode.window.showInputBox({ title: 'Inform new AWS region code(ex: us-east-1):' });
+        this.context.workspaceState.update('awsRegion', newAwsRegion);
+        vscode.commands.executeCommand('lambdasView.refresh');
+    }
+
+    async updateProfileName(oldProfileName: string): Promise<void> {
+        const newProfileName = await vscode.window.showInputBox({ title: 'Inform new profile name for ' + oldProfileName + ':' });
+        if (newProfileName) {
+            let workspaceData = this.context.workspaceState.get('workspaceData') as AwsData[];
+            if (!workspaceData || workspaceData.length < 1) {
+                const awsData: AwsData = {
+                    profileName: newProfileName
+                };
+                workspaceData = [awsData];
+            } else {
+                workspaceData.forEach(awsData => {
+                    if (awsData.profileName === oldProfileName) {
+                        awsData.profileName = newProfileName;
+                    }
+                });
+            }
+            this.context.workspaceState.update('workspaceData', workspaceData);
+            vscode.window.showInformationMessage('Profile name updated!');
+        }
     }
 
     private getServerlessSuport() {
@@ -123,6 +172,12 @@ export class SettingsView {
         const servelessDeployParams: string = this.context.workspaceState.get('servelessDeployParams') || '';
         let stageSupport: boolean = this.context.workspaceState.get('stageSupport') || false;
         const serverlessSupport = this.getServerlessSuport();
+        let awsRegion: string | undefined = this.context.workspaceState.get('awsRegion');
+        if (!awsRegion) {
+            awsRegion = 'us-east-1';
+            this.context.workspaceState.update('awsRegion', awsRegion);
+        }
+
         const stageList: string[] | undefined = this.context.workspaceState.get('stageList');
         if (!prefixName && serverlessSupport?.available) {
             prefixName = serverlessSupport.serviceName;
@@ -133,15 +188,51 @@ export class SettingsView {
             stageList: stageList || [],
             stageSupport,
             servelessDeployParams,
-            logTimeString
+            logTimeString,
+            awsRegion
         };
     }
 
     private getWebContentSettings() {
         const config = this.getConfigs();
-        return this.settingsHtml.getWebContentSettings(config);
+        const logoScr = this.panel?.webview.asWebviewUri(this.logoPath);
+        return this.settingsHtml.getWebContentSettings(config, this.getAwsProfileList(), logoScr!);
     }
 
+    private getAwsProfileList(): string[] {
+        const workspaceData = this.context.workspaceState.get('workspaceData') as AwsData[];
+        let awsProfileList = workspaceData?.map((awsProfile) => awsProfile.profileName);
+        if (!awsProfileList || awsProfileList.length === 0) {
+            awsProfileList = ['default'];
+        }
+        return awsProfileList;
+    }
 
+    private async removeAwsProfile(profileName: string): Promise<void> {
+        const response = await vscode.window.showWarningMessage("Are you sure you want to delete " + profileName + " profile? This will delete all data related.", "Yes", "No");
+        if (response && response === "Yes"){
+            let workspaceData = this.context.workspaceState.get('workspaceData') as AwsData[];
+            workspaceData = workspaceData.filter(item => item.profileName !== profileName) ;
+            this.context.workspaceState.update('workspaceData', workspaceData);
+        }
+    }
+
+    private addNewProfile(newProfileName: string): void {
+        let workspaceData = this.context.workspaceState.get('workspaceData') as AwsData[];
+        const existingProfileList = workspaceData?.filter((awsProfile) => awsProfile.profileName === newProfileName);
+        if (!existingProfileList || existingProfileList.length === 0) {
+            const awsData: AwsData = {
+                profileName: newProfileName
+            };
+            if (workspaceData) {
+                workspaceData.push(awsData);
+            } else {
+                workspaceData = [awsData];
+            }
+            this.context.workspaceState.update('workspaceData', workspaceData);
+        } else if (existingProfileList) {
+            vscode.window.showErrorMessage(newProfileName + ' already exists.');
+        }
+    }
 
 }

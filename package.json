@@ -23,8 +23,8 @@
         "command": "lambdasView.refresh",
         "title": "Refresh",
         "icon": {
-          "dark": "resources/refresh-white.svg",
-          "light": "resources/refresh.svg"
+          "dark": "resources/refresh-dark.png",
+          "light": "resources/refresh-light.png"
         }
       },
       {
@@ -44,6 +44,10 @@
         "title": "Change Stage"
       },
       {
+        "command": "lambdasView.changeAwsProfile",
+        "title": "Change Aws Profile"
+      },
+      {
         "command": "lambdaItem.deploy",
         "title": "Deploy"
       },
@@ -51,8 +55,8 @@
         "command": "lambdaAssistant.openSettings",
         "title": "Settings",
         "icon": {
-          "dark": "resources/settings-white.svg",
-          "light": "resources/settings.svg"
+          "dark": "resources/settings-dark.png",
+          "light": "resources/settings-light.png"
         }
       }
     ],
@@ -60,8 +64,8 @@
       "activitybar": [
         {
           "id": "lambda-assistant-acitivity-bar",
-          "title": "Lambda Assistant",
-          "icon": "resources/Logoext_iconExt_v2.png"
+          "title": "Serverless Assistant",
+          "icon": "resources/ext_icon.png"
         }
       ]
     },
@@ -89,6 +93,10 @@
         {
           "command": "lambdasView.updateStage",
           "when": "view == lambdasView && stageSupport"
+        },
+        {
+          "command": "lambdasView.changeAwsProfile",
+          "when": "view == lambdasView"
         }
       ],
       "view/item/context": [
@@ -143,6 +151,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.421.0",
+    "@aws-sdk/credential-providers": "^3.428.0",
     "js-yaml": "^4.1.0"
   }
 }

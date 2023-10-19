@@ -1,6 +1,6 @@
 import { InvokeCommand, InvokeCommandInput, InvokeCommandOutput, LambdaClient } from '@aws-sdk/client-lambda';
 import * as vscode from 'vscode';
-import { InvokeData, LambdaData } from '../intefaces/lambda-data.interface';
+import { AwsData, InvokeData, LambdaData } from '../intefaces/lambda-data.interface';
 import { InvokeHtml } from './invoke.html';
 
 export class InvokeView {
@@ -27,7 +27,6 @@ export class InvokeView {
         this.context.subscriptions.push(invokeButonDisposable);
     }
 
-
     private createPanel(lambdaData: LambdaData) {
         this.panel = vscode.window.createWebviewPanel('Invoke' + lambdaData.functionName, 'Invoke ' + lambdaData.functionName, vscode.ViewColumn.One,
             {
@@ -40,21 +39,22 @@ export class InvokeView {
 
         this.panel.webview.onDidReceiveMessage(
             message => {
-                let localLambdaList = this.context.workspaceState.get('lambdaList') as LambdaData[];
-                const lambdaLocal = localLambdaList.find((item) => item.functionName === lambdaData.functionName);
-
+                const currentAwsProfile: string = this.context.workspaceState.get('currentAwsProfile') || 'default';
+                let workspaceData: AwsData[] | undefined = this.context.workspaceState.get('workspaceData') as AwsData[];
+                let awsData: AwsData = workspaceData?.find(obj => obj.profileName === currentAwsProfile) as AwsData;                
+                // let localLambdaList = this.context.workspaceState.get('lambdaList') as LambdaData[];
+                const lambdaLocal = awsData.lambdaList?.find((item) => item.functionName === lambdaData.functionName);
                 switch (message.command) {
-
                     case 'changeName':
                         this.invokeHtml.selectedData = message.text;
                         this.panel!.webview.html = this.invokeHtml.getWebViewHtml(lambdaLocal!, undefined);
                         break;
                     case 'invokeAws':
-                        this.saveInvoke(localLambdaList, lambdaLocal!, message.text, message.invokeName);
+                        this.saveInvoke(awsData.lambdaList!, lambdaLocal!, message.text, message.invokeName);
                         this.invokeLambdaAws(message.text, lambdaData);
                         break;
                     case 'invokeLocal':
-                        this.saveInvoke(localLambdaList, lambdaLocal!, message.text, message.invokeName);
+                        this.saveInvoke(awsData.lambdaList!, lambdaLocal!, message.text, message.invokeName);
                         this.invokeLambdaLocal(message.text, lambdaData);
                         break;
                 }
@@ -103,7 +103,12 @@ export class InvokeView {
         }
         // console.log('lambdaLocal => ' + JSON.stringify(lambdaLocal, undefined, 2));
         // console.log('localLambdaList => ' + JSON.stringify(localLambdaList, undefined, 2));
-        this.context.workspaceState.update('lambdaList', localLambdaList);
+        const currentAwsProfile: string = this.context.workspaceState.get('currentAwsProfile') || 'default';
+        let workspaceData: AwsData[] | undefined = this.context.workspaceState.get('workspaceData') as AwsData[];
+        let awsData: AwsData = workspaceData?.find(obj => obj.profileName === currentAwsProfile) as AwsData;                
+        awsData.lambdaList = localLambdaList;
+
+        this.context.workspaceState.update('workspaceData', workspaceData);
     }
 
     private invokeLambdaAws(data: string, lambdaData: LambdaData): void {
@@ -117,10 +122,9 @@ export class InvokeView {
                 InvocationType: "RequestResponse",
                 Payload: Buffer.from(JSON.stringify(JSON.parse(data)), "utf8"),
             };
-
             const command = new InvokeCommand(input);
             const client = new LambdaClient({ region: "us-east-1" });
-            client.send(command).then((response: InvokeCommandOutput) => {
+            client.send(command).then((response: any) => {
                 const responsePayload = JSON.parse(Buffer.from(response.Payload!).toString());
                 console.log('responsePayload => ' + JSON.stringify(responsePayload, undefined, 2));
                 // vscode.window.showInformationMessage(JSON.stringify(response, undefined, 2));
@@ -131,10 +135,5 @@ export class InvokeView {
             console.error("error triggering function", e as Error);
         }
     }
-
-
-
-
-
 
 }

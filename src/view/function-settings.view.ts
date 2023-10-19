@@ -3,7 +3,7 @@ import { load } from "js-yaml";
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { FunctionsSettingsHtml } from './function-settings.html';
-import { LambdaData } from '../intefaces/lambda-data.interface';
+import { AwsData, LambdaData } from '../intefaces/lambda-data.interface';
 
 export class FunctionSettingsView {
 
@@ -39,12 +39,17 @@ export class FunctionSettingsView {
                 switch (message.command) {
                     case 'save':
                         // serverlessName //message.text
-                        let localLambdaList = this.context.workspaceState.get('lambdaList') as LambdaData[];
+                        const currentAwsProfile: string = this.context.workspaceState.get('currentAwsProfile') || 'default';
+                        let workspaceData: AwsData[] | undefined = this.context.workspaceState.get('workspaceData') as AwsData[];
+                        let awsData: AwsData = workspaceData?.find(obj => obj.profileName === currentAwsProfile) as AwsData;
+
+                        // let localLambdaList = this.context.workspaceState.get('lambdaList') as LambdaData[];
                         // console.log('localLambdaList 1 => '+ JSON.stringify(localLambdaList, undefined, 2));
-                        const lambdaLocal = localLambdaList.find((item) => item.functionName === lambdaData.functionName);
+                        const lambdaLocal = awsData.lambdaList!.find((item) => item.functionName === lambdaData.functionName);
                         lambdaLocal!.serverlessName = message.text && message.text.trim().length > 0 ? message.text : undefined;
+                        this.context.workspaceState.update('workspaceData', workspaceData);
                         // console.log('localLambdaList 2 => '+ JSON.stringify(localLambdaList, undefined, 2));
-                        this.context.workspaceState.update('lambdaList', localLambdaList);
+                        // this.context.workspaceState.update('lambdaList', localLambdaList);
                         // vscode.commands.executeCommand('lambdasView.refresh');
                         this.panel?.dispose();
                         break;

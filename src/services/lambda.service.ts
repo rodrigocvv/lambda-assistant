@@ -1,7 +1,8 @@
 import { FunctionConfiguration, LambdaClient, ListFunctionsCommand, ListFunctionsRequest } from "@aws-sdk/client-lambda";
 import * as vscode from 'vscode';
-import { LambdaData } from '../intefaces/lambda-data.interface';
+import { AwsData, LambdaData } from '../intefaces/lambda-data.interface';
 import { LambdaProvider } from '../providers/lambda.provider';
+import { fromIni } from "@aws-sdk/credential-providers";
 
 export class LambdaService {
 
@@ -28,7 +29,7 @@ export class LambdaService {
     public registerDeployButton(viewId: string): void {
         let deployButtonDisposable = vscode.commands.registerCommand(viewId, async (lambdaItem) => {
             let localLambdaList = this.context.workspaceState.get('lambdaList') as LambdaData[];
-            const localLambda = localLambdaList.find((item) => item.functionName === lambdaItem.lambdaData.functionName);
+            const localLambda = localLambdaList?.find((item) => item.functionName === lambdaItem.lambdaData.functionName);
             const serverlessName = localLambda?.serverlessName;
             if (serverlessName) {
                 const terminal = vscode.window.createTerminal('Deploy: ' + serverlessName);
@@ -56,7 +57,7 @@ export class LambdaService {
         this.context.subscriptions.push(showLogDisposable);
     }
 
-    public registerChangeStageButton(viewId: string): void {
+    public async registerChangeStageButton(viewId: string): Promise<void> {
         let changeStageButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             const stageList: string[] = this.context.workspaceState.get('stageList') || [];
             const stage = await vscode.window.showQuickPick(stageList, { canPickMany: false, title: "Select your stage:" });
@@ -68,8 +69,32 @@ export class LambdaService {
         this.context.subscriptions.push(changeStageButonDisposable);
     }
 
+    public async registerChangeProfileButton(viewId: string): Promise<void> {
+        let changeProfileButonDisposable = vscode.commands.registerCommand(viewId, async () => {
+            const awsProfileList = this.getAwsProfileList();
+            const currentAwsProfile = await vscode.window.showQuickPick(awsProfileList, { canPickMany: false, title: "Select your aws profile:" });
+            this.context.workspaceState.update('currentAwsProfile', currentAwsProfile);
+            this.lambdaProvider?.refresh(this.getLambdaList());
+            // lambdaProvider.refresh(lambdaService);
+            // vscode.commands.executeCommand('lambdasView.refresh');
+        });
+        this.context.subscriptions.push(changeProfileButonDisposable);
+    }
+
+    private getAwsProfileList(): string[] {
+        const workspaceData = this.context.workspaceState.get('workspaceData') as AwsData[];
+        let awsProfileList = workspaceData?.map((awsProfile) => awsProfile.profileName);
+        if (!awsProfileList || awsProfileList.length === 0) {
+            awsProfileList = ['default'];
+        }
+        return awsProfileList;
+    }
+
     public getLambdaList(): LambdaData[] | undefined {
-        let lambdaList: LambdaData[] | undefined = this.context.workspaceState.get('lambdaList');
+        const currentAwsProfile = this.context.workspaceState.get('currentAwsProfile') || 'default';
+        const workspaceData = this.context.workspaceState.get('workspaceData') as AwsData[];
+        const awsData = workspaceData?.find(obj => obj.profileName === currentAwsProfile);
+        let lambdaList: LambdaData[] | undefined = awsData?.lambdaList;
         let prefix = this.context.workspaceState.get('prefixName') as string;
         const stageSupport = this.context.workspaceState.get('stageSupport') || false;
         const stageList: string[] | undefined = this.context.workspaceState.get('stageList');
@@ -85,19 +110,28 @@ export class LambdaService {
     public async refreshData(): Promise<void> {
         console.log('refreshing data!');
         let awsLambdaList = await this.retriveLambdaListFromAws();
-        let prefix = this.context.workspaceState.get('prefixName') as string;
-        awsLambdaList = awsLambdaList.filter(obj => obj.functionName.startsWith(prefix));
+        // let prefix = this.context.workspaceState.get('prefixName') as string;
+        // awsLambdaList = awsLambdaList.filter(obj => obj.functionName.startsWith(prefix));
         // const filteredList = lambdaList.filter(obj => obj.startsWith(prefix));
-        let localLambdaList = this.context.workspaceState.get('lambdaList');
-        //fix from first version
-        if (localLambdaList && Array.isArray(localLambdaList)) {
-            const isStringsArray = localLambdaList.every(i => typeof i === "string");
-            this.context.workspaceState.update('lambdaList', undefined);
-            localLambdaList = undefined;
+
+        const currentAwsProfile: string = this.context.workspaceState.get('currentAwsProfile') || 'default';
+        let workspaceData: AwsData[] | undefined = this.context.workspaceState.get('workspaceData') as AwsData[];
+        let awsData: AwsData = workspaceData?.find(obj => obj.profileName === currentAwsProfile) as AwsData;
+
+        // let localLambdaList = this.context.workspaceState.get('lambdaList');
+        const lambdaList = this.mergeLambdaData(awsLambdaList, awsData?.lambdaList);
+        // console.log('Merged Lambda List => ' + JSON.stringify(lambdaList, undefined, 2));
+        if (awsData){
+            awsData.lambdaList = lambdaList;
+        } else {
+            awsData = {
+                profileName: currentAwsProfile,
+                lambdaList: lambdaList
+            };
         }
-        const lambdaList = this.mergeLambdaData(awsLambdaList, localLambdaList as LambdaData[]);
-        console.log('Merged Lambda List => ' + JSON.stringify(lambdaList, undefined, 2));
-        this.context.workspaceState.update('lambdaList', lambdaList);
+        workspaceData = workspaceData ? workspaceData : [awsData];
+        console.log('workspaceData => '+ JSON.stringify(workspaceData, undefined, 2));
+        this.context.workspaceState.update('workspaceData', workspaceData);
     }
 
     private mergeLambdaData(awsLambdaList: LambdaData[], localLambdaList: LambdaData[] | undefined): LambdaData[] {
@@ -109,7 +143,7 @@ export class LambdaService {
         } else {
             // awsLambdaList.forEach((obj) => { obj.isActive = true; });
             awsLambdaList.forEach((awsLambdaData) => {
-                const localLambda = localLambdaList.find((item) => item.functionName === awsLambdaData.functionName);
+                const localLambda = localLambdaList?.find((item) => item.functionName === awsLambdaData.functionName);
                 if (localLambda) {
                     awsLambdaData.isActive = true;
                     awsLambdaData.serverlessName = localLambda.serverlessName;
@@ -121,7 +155,7 @@ export class LambdaService {
             });
             localLambdaList.forEach((localLambda) => {
                 // const localLambda = localLambdaList.find((item) => {item.functionName === awsLambdaData.functionName});
-                const awsLambda = localLambdaList.find((awsLambdaData) => localLambda.functionName === awsLambdaData.functionName);
+                const awsLambda = localLambdaList?.find((awsLambdaData) => localLambda.functionName === awsLambdaData.functionName);
                 if (!awsLambda) {
                     localLambda.isActive = false;
                     lambdaList.push(localLambda);
@@ -134,9 +168,11 @@ export class LambdaService {
     private async retriveLambdaListFromAws(): Promise<LambdaData[]> {
         const lambdaList: LambdaData[] = [];
         let input: ListFunctionsRequest = { MaxItems: 50 };
-        const client = new LambdaClient({});
+        let awsRegion: string = this.context.workspaceState.get('awsRegion') || 'us-east-1';
+        const currentAwsProfile: string = this.context.workspaceState.get('currentAwsProfile') || 'default';
+        const client = new LambdaClient({ region: awsRegion, credentials: fromIni({ profile: currentAwsProfile }) });
         let command = new ListFunctionsCommand(input);
-        let response = await client.send(command);
+        let response: any = await client.send(command);
         // console.log('response => '+ JSON.stringify(response, undefined, 2));
         response.Functions?.forEach((lambda: FunctionConfiguration) => { lambdaList.push(this.getLambdaDataFromAws(lambda)); });
         while (response.NextMarker) {
@@ -153,7 +189,9 @@ export class LambdaService {
         return {
             functionName: functionConfiguration.FunctionName!,
             functionArn: functionConfiguration.FunctionArn!,
-            lastModified: functionConfiguration.LastModified ? new Date(functionConfiguration.LastModified) : undefined
+            lastModified: functionConfiguration.LastModified ? new Date(functionConfiguration.LastModified) : undefined,
+            timeout: functionConfiguration.Timeout,
+            codeSize: functionConfiguration.CodeSize
         };
     }
 }

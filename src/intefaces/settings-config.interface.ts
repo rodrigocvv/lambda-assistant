@@ -5,4 +5,5 @@ export interface SettingsConfig {
     stageSupport: boolean;
     servelessDeployParams: string;
     logTimeString: string;
+    awsRegion: string;
 }
