@@ -30,10 +30,19 @@ export class InvokeHtml {
                     const vscode = acquireVsCodeApi();
                     function save() {
                         const data = document.getElementById("invokeData").value;
-                        const invokeLocal = document.getElementById("invokeLocal").checked;
                         const name = document.getElementById("invokeName").value;
-                        vscode.postMessage({ command: 'save', text: data, invokeLocal: invokeLocal ? true: false, name });
+                        vscode.postMessage({ command: 'save', text: data});
                     }
+                    function addBookmark() {
+                        const data = document.getElementById("invokeData").value;
+                        const name = document.getElementById("invokeName").value;
+                        vscode.postMessage({ command: 'addBookmark', text: data, invokeName: name });
+                    }                    
+                    function removeBookmark() {
+                        const data = document.getElementById("invokeData").value;
+                        const name = document.getElementById("invokeName").value;
+                        vscode.postMessage({ command: 'removeBookmark', text: data, invokeName: name  });
+                    }                    
                     function invokeAws() {
                         const data = document.getElementById("invokeData").value;
                         const name = document.getElementById("invokeName").value;
@@ -56,8 +65,11 @@ export class InvokeHtml {
                     }                    
                 </script>
     
-                    <center><h1>${lambdaData.functionName}</h1></center>
-                    <br><br>
+                    <center>
+                        <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 350px;">
+                            <h1>${lambdaData.functionName}</h1></center>
+                        </div>
+                    
                     <br>
                     <center>
                         <table style="table-layout:fixed;">
@@ -68,6 +80,8 @@ export class InvokeHtml {
                                         <option value="request2" ${this.selectedData === 'request2' ? 'selected' : ''}>request2</option>
                                         <option value="request3" ${this.selectedData === 'request3' ? 'selected' : ''}>request3</option>                        
                                     </select>
+                                    <button class="form-button" style="margin-left: 300px;width: 200px;height: 25px;${!lambdaData.bookmark ? '' : 'display:none'}" onclick="addBookmark()">Add to bookmark</button>
+                                    <button class="form-button" style="margin-left: 300px;width: 200px;height: 25px;${lambdaData.bookmark === true ? '' : 'display:none'}" onclick="removeBookmark()">Remove from bookmark</button>
                                 </td>
                             </tr>
                                 <td>
@@ -84,9 +98,6 @@ export class InvokeHtml {
                         
                     </center>
                 </BODY>
-                <script>
-                    checkStage();
-                </script>
             </HTML>
         `;
     }

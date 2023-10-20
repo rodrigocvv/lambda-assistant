@@ -2,12 +2,14 @@ import { InvokeCommand, InvokeCommandInput, InvokeCommandOutput, LambdaClient } 
 import * as vscode from 'vscode';
 import { AwsData, InvokeData, LambdaData } from '../intefaces/lambda-data.interface';
 import { InvokeHtml } from './invoke.html';
+import { ExtensionView } from './extension-view';
 
-export class InvokeView {
+export class InvokeView extends ExtensionView{
 
     invokeHtml: InvokeHtml;
 
     constructor(private context: vscode.ExtensionContext) {
+        super(context);
         this.invokeHtml = new InvokeHtml();
     }
 
@@ -27,6 +29,14 @@ export class InvokeView {
         this.context.subscriptions.push(invokeButonDisposable);
     }
 
+    public registerOpenInvokeViewCommand(viewId: string): void {
+        let invokeButonDisposable = vscode.commands.registerCommand(viewId, async (lambdaData) => {
+            this.openView(lambdaData);
+        });
+        this.context.subscriptions.push(invokeButonDisposable);
+    }
+
+
     private createPanel(lambdaData: LambdaData) {
         this.panel = vscode.window.createWebviewPanel('Invoke' + lambdaData.functionName, 'Invoke ' + lambdaData.functionName, vscode.ViewColumn.One,
             {
@@ -35,6 +45,10 @@ export class InvokeView {
             });
 
         // this.panel!.webview!.html = this.invokeHtml.getLoader();
+        this.panel.iconPath = {
+            dark: this.panel.webview.asWebviewUri(this.logoUri),
+            light: this.panel.webview.asWebviewUri(this.logoUri),
+        };
         this.panel.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined);
 
         this.panel.webview.onDidReceiveMessage(
@@ -56,6 +70,20 @@ export class InvokeView {
                     case 'invokeLocal':
                         this.saveInvoke(awsData.lambdaList!, lambdaLocal!, message.text, message.invokeName);
                         this.invokeLambdaLocal(message.text, lambdaData);
+                        break;
+                    case 'addBookmark':
+                        this.saveInvoke(awsData.lambdaList!, lambdaLocal!, message.text, message.invokeName);
+                        lambdaLocal!.bookmark = true;
+                        this.context.workspaceState.update('workspaceData', workspaceData);
+                        vscode.commands.executeCommand('invokeBookmarkView.refresh');
+                        this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined);
+                        break;
+                    case 'removeBookmark':
+                        this.saveInvoke(awsData.lambdaList!, lambdaLocal!, message.text, message.invokeName);
+                        lambdaLocal!.bookmark = false;
+                        this.context.workspaceState.update('workspaceData', workspaceData);
+                        vscode.commands.executeCommand('invokeBookmarkView.refresh');
+                        this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined);
                         break;
                 }
             },
@@ -85,6 +113,7 @@ export class InvokeView {
             vscode.window.showErrorMessage("For this operation you need to configure your function name(defined in serverless yaml) in functions settings.");
         }
     }
+
 
     private saveInvoke(localLambdaList: LambdaData[], lambdaLocal: LambdaData, data: string, invokeName: string): void {
         const invokeData: InvokeData = {

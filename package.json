@@ -4,7 +4,7 @@
   "description": "Deploy and invoke your lambdas",
   "publisher": "Rodrigo Villela",
   "icon": "resources/ext_red.png",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/rodrigocvv/lambda-assistant"
@@ -26,6 +26,18 @@
           "dark": "resources/refresh-dark.png",
           "light": "resources/refresh-light.png"
         }
+      },
+      {
+        "command": "invokeBookmarkView.add",
+        "title": "Add New Invoke",
+        "icon": {
+          "dark": "resources/plus-dark.png",
+          "light": "resources/plus-light.png"
+        }
+      },
+      {
+        "command": "invokeBookmarkView.refresh",
+        "title": "Refresh Bookmark View"
       },
       {
         "command": "lambdaItem.showLog",
@@ -75,6 +87,11 @@
           "id": "lambdasView",
           "name": "",
           "contextualTitle": ""
+        },
+        {
+          "id": "invokeBookmarkView",
+          "name": "Invoke Bookmark",
+          "contextualTitle": "Invoke Bookmark"
         }
       ]
     },
@@ -83,6 +100,11 @@
         {
           "command": "lambdasView.refresh",
           "when": "view == lambdasView && isExtesionConfigured",
+          "group": "navigation"
+        },
+        {
+          "command": "invokeBookmarkView.add",
+          "when": "view == invokeBookmarkView && isExtesionConfigured",
           "group": "navigation"
         },
         {

@@ -76,7 +76,7 @@ export class SettingHtml {
                     <center><h1>Workspace Settings</h1></center>
 
                     <center>
-
+                    
 
                     <div class="container">
                         <div class="linha">
@@ -85,42 +85,42 @@ export class SettingHtml {
                             </div>
                             <div class="coluna">
 
-                    <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 350px;">
-                        <div style="padding-top: 20px; margin-bottom: 20px;">
+                                <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 350px;">
+                                    <div style="padding-top: 20px; margin-bottom: 20px;">
 
-                            <table style="">
-                                <tr>
-                                    <td>Lambda Prefix Name</td>
-                                    <td><input type="text" id="prefix" size="20" value="${config.prefixName}"></td>
-                                </tr>
-                                <tr>
-                                    <td>Log Time</td>
-                                    <td><input type="text" id="logTime" value="${config.logTimeString}"></td>
-                                </tr>                            
-                            </table>
-                            <br>
-                            <button style="width: 150px;height:30px;" class="form-button" onclick="save()">Save</button>
-                        </div>
-                     </div>
+                                        <table style="">
+                                            <tr>
+                                                <td>Lambda Prefix Name</td>
+                                                <td><input type="text" id="prefix" size="20" value="${config.prefixName}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Log Time</td>
+                                                <td><input type="text" id="logTime" value="${config.logTimeString}"></td>
+                                            </tr>                            
+                                        </table>
+                                        <br>
+                                        <button style="width: 150px;height:30px;" class="form-button" onclick="save()">Save</button>
+                                    </div>
+                                </div>
 
 
-                     <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 350px;">
-                     <div style="padding-top: 20px; margin-bottom: 20px;">
-                     <table>
-                         <tr>
-                             <td><input type="checkbox" ${config.stageSupport ? 'checked' : ''} id="checkStage" onclick="checkStage()"></td>
-                             <td>Add stages support</td>
-                         </tr>
-                     </table>
-                     <table style="display: ${config.stageSupport ? '' : 'none'}; padding-top: 20px;">
-                         <tr>
-                             <td><input type="text" id="newStageName"></td>
-                             <td><button onclick="addStage()" style="width:25px;">+</button></td>
-                         </tr>
-                         ${this.getStageListHtml(config.stageList)}
-                     </table>
-                     </div>
-                 </div>
+                                <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 350px;">
+                                <div style="padding-top: 20px; margin-bottom: 20px;">
+                                <table>
+                                    <tr>
+                                        <td><input type="checkbox" ${config.stageSupport ? 'checked' : ''} id="checkStage" onclick="checkStage()"></td>
+                                        <td>Add stages support</td>
+                                    </tr>
+                                </table>
+                                <table style="display: ${config.stageSupport ? '' : 'none'}; padding-top: 20px;">
+                                    <tr>
+                                        <td><input type="text" id="newStageName"></td>
+                                        <td><button onclick="addStage()" style="width:25px;">+</button></td>
+                                    </tr>
+                                    ${this.getStageListHtml(config.stageList)}
+                                </table>
+                                </div>
+                            </div>
 
         
 

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { LambdaData } from '../intefaces/lambda-data.interface';
 
-export class LambdaProvider implements vscode.TreeDataProvider<LambdaItem> {
+export class BookmarkProvider implements vscode.TreeDataProvider<LambdaItem> {
 
     private _onDidChangeTreeData: vscode.EventEmitter<LambdaItem | undefined | void> = new vscode.EventEmitter<LambdaItem | undefined | void>();
     readonly onDidChangeTreeData: vscode.Event<LambdaItem | undefined | void> = this._onDidChangeTreeData.event;

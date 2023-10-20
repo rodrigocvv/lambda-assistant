@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { AwsData, LambdaData } from '../intefaces/lambda-data.interface';
 import { LambdaProvider } from '../providers/lambda.provider';
 import { fromIni } from "@aws-sdk/credential-providers";
+import { BookmarkProvider } from '../providers/bookmark.provider';
 
 export class LambdaService {
 
@@ -18,10 +19,20 @@ export class LambdaService {
         this.context.subscriptions.push(lambdaDisposable);
     }
 
+    // public registerBookmarkDataProvider(viewId: string): void {
+    //     const lambdaList = this.getBookmarkLambdaList();
+    //     this.lambdaProvider = new BookmarkProvider(lambdaList);
+    //     const lambdaDisposable = vscode.window.registerTreeDataProvider(viewId, this.lambdaProvider);
+    //     this.context.subscriptions.push(lambdaDisposable);
+    // }
+
+    // getBookmarkLambdaList()
+
     public registerDataRefreshButton(viewId: string): void {
         let refreshLmabdaButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             await this.refreshData();
             this.lambdaProvider?.refresh(this.getLambdaList());
+            vscode.commands.executeCommand('invokeBookmarkView.refresh');
         });
         this.context.subscriptions.push(refreshLmabdaButonDisposable);
     }
@@ -103,7 +114,7 @@ export class LambdaService {
             currentStage = this.context.workspaceState.get('currentStage') || stageList[0];
             prefix += '-' + currentStage;
         }
-        const filteredList = lambdaList?.filter(obj => obj.functionName?.startsWith(prefix));
+        const filteredList = lambdaList?.filter(obj => obj.functionName?.startsWith(prefix) && obj.isActive);
         return filteredList;
     }
 
@@ -148,6 +159,7 @@ export class LambdaService {
                     awsLambdaData.isActive = true;
                     awsLambdaData.serverlessName = localLambda.serverlessName;
                     awsLambdaData.invokeData = localLambda.invokeData;
+                    awsLambdaData.bookmark = localLambda.bookmark;
                 } else {
                     awsLambdaData.isActive = true;
                 }
@@ -155,7 +167,7 @@ export class LambdaService {
             });
             localLambdaList.forEach((localLambda) => {
                 // const localLambda = localLambdaList.find((item) => {item.functionName === awsLambdaData.functionName});
-                const awsLambda = localLambdaList?.find((awsLambdaData) => localLambda.functionName === awsLambdaData.functionName);
+                const awsLambda = lambdaList?.find((awsLambdaData) => localLambda.functionName === awsLambdaData.functionName);
                 if (!awsLambda) {
                     localLambda.isActive = false;
                     lambdaList.push(localLambda);

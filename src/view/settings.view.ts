@@ -36,6 +36,7 @@ export class SettingsView {
             { enableScripts: true, retainContextWhenHidden: true });
 
         this.panel.webview.html = this.getWebContentSettings();
+        this.panel.iconPath = this.panel?.webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'resources', 'icon.jpg'));
 
         this.panel.webview.onDidReceiveMessage(
             message => {

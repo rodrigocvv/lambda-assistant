@@ -7,6 +7,7 @@ export interface LambdaData {
     isActive?: boolean;
     timeout?: number;
     codeSize?: number;
+    bookmark?: boolean;
 }
 
 export interface InvokeData {
