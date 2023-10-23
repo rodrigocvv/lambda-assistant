@@ -3,13 +3,19 @@ import * as vscode from 'vscode';
 import { AwsData, InvokeData, LambdaData } from '../intefaces/lambda-data.interface';
 import { InvokeHtml } from './invoke.html';
 import { ExtensionView } from './extension-view';
+import { WorkspaceService } from '../services/worskpace.service';
+import { AwsService } from '../services/aws.service';
 
-export class InvokeView extends ExtensionView{
+export class InvokeView extends ExtensionView {
 
     invokeHtml: InvokeHtml;
+    workspaceService: WorkspaceService;
+    awsService: AwsService;
 
-    constructor(private context: vscode.ExtensionContext) {
-        super(context);
+    constructor() {
+        super();
+        this.workspaceService = new WorkspaceService();
+        this.awsService = new AwsService();
         this.invokeHtml = new InvokeHtml();
     }
 
@@ -26,16 +32,15 @@ export class InvokeView extends ExtensionView{
         let invokeButonDisposable = vscode.commands.registerCommand(viewId, async (lambdaItem) => {
             this.openView(lambdaItem.lambdaData);
         });
-        this.context.subscriptions.push(invokeButonDisposable);
+        this.getContext().subscriptions.push(invokeButonDisposable);
     }
 
     public registerOpenInvokeViewCommand(viewId: string): void {
         let invokeButonDisposable = vscode.commands.registerCommand(viewId, async (lambdaData) => {
             this.openView(lambdaData);
         });
-        this.context.subscriptions.push(invokeButonDisposable);
+        this.getContext().subscriptions.push(invokeButonDisposable);
     }
-
 
     private createPanel(lambdaData: LambdaData) {
         this.panel = vscode.window.createWebviewPanel('Invoke' + lambdaData.functionName, 'Invoke ' + lambdaData.functionName, vscode.ViewColumn.One,
@@ -44,46 +49,38 @@ export class InvokeView extends ExtensionView{
                 retainContextWhenHidden: true
             });
 
-        // this.panel!.webview!.html = this.invokeHtml.getLoader();
-        this.panel.iconPath = {
-            dark: this.panel.webview.asWebviewUri(this.logoUri),
-            light: this.panel.webview.asWebviewUri(this.logoUri),
-        };
-        this.panel.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined);
+        this.panel.iconPath = this.iconPath;
+        this.panel.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
 
         this.panel.webview.onDidReceiveMessage(
             message => {
-                const currentAwsProfile: string = this.context.workspaceState.get('currentAwsProfile') || 'default';
-                let workspaceData: AwsData[] | undefined = this.context.workspaceState.get('workspaceData') as AwsData[];
-                let awsData: AwsData = workspaceData?.find(obj => obj.profileName === currentAwsProfile) as AwsData;                
-                // let localLambdaList = this.context.workspaceState.get('lambdaList') as LambdaData[];
-                const lambdaLocal = awsData.lambdaList?.find((item) => item.functionName === lambdaData.functionName);
                 switch (message.command) {
+                    case 'refresh':
+                        this.panel!.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
+                        break;
                     case 'changeName':
                         this.invokeHtml.selectedData = message.text;
-                        this.panel!.webview.html = this.invokeHtml.getWebViewHtml(lambdaLocal!, undefined);
+                        this.panel!.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
                         break;
                     case 'invokeAws':
-                        this.saveInvoke(awsData.lambdaList!, lambdaLocal!, message.text, message.invokeName);
+                        this.workspaceService.saveInvokeData(lambdaData.functionName, message.invokeName, message.text);
                         this.invokeLambdaAws(message.text, lambdaData);
                         break;
                     case 'invokeLocal':
-                        this.saveInvoke(awsData.lambdaList!, lambdaLocal!, message.text, message.invokeName);
-                        this.invokeLambdaLocal(message.text, lambdaData);
+                        this.workspaceService.saveInvokeData(lambdaData.functionName, message.invokeName, message.text);
+                        this.awsService.invokeLambdaLocal(lambdaData.functionName, message.text);
                         break;
                     case 'addBookmark':
-                        this.saveInvoke(awsData.lambdaList!, lambdaLocal!, message.text, message.invokeName);
-                        lambdaLocal!.bookmark = true;
-                        this.context.workspaceState.update('workspaceData', workspaceData);
+                        this.workspaceService.saveInvokeData(lambdaData.functionName, message.invokeName, message.text);
+                        this.workspaceService.setBookmark(lambdaData.functionName, true);
                         vscode.commands.executeCommand('invokeBookmarkView.refresh');
-                        this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined);
+                        this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
                         break;
                     case 'removeBookmark':
-                        this.saveInvoke(awsData.lambdaList!, lambdaLocal!, message.text, message.invokeName);
-                        lambdaLocal!.bookmark = false;
-                        this.context.workspaceState.update('workspaceData', workspaceData);
+                        this.workspaceService.saveInvokeData(lambdaData.functionName, message.invokeName, message.text);
+                        this.workspaceService.setBookmark(lambdaData.functionName, false);
                         vscode.commands.executeCommand('invokeBookmarkView.refresh');
-                        this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined);
+                        this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
                         break;
                 }
             },
@@ -100,64 +97,35 @@ export class InvokeView extends ExtensionView{
         );
     }
 
-    private invokeLambdaLocal(data: string, lambdaData: LambdaData): void {
-        if (lambdaData.serverlessName) {
-            data = data.replaceAll('\n', '');
-            data = data.replaceAll('\t', '');
-            const terminal = vscode.window.createTerminal('Invoke: ' + lambdaData.functionName);
-            const stageSupport = this.context.workspaceState.get('stageSupport');
-            const currentStage = this.context.workspaceState.get('currentStage');
-            terminal.sendText(`serverless invoke local -f ${lambdaData.serverlessName} ${stageSupport ? '--stage ' + currentStage : ''} --data ${JSON.stringify(data)}`);
-            terminal.show();
-        } else {
-            vscode.window.showErrorMessage("For this operation you need to configure your function name(defined in serverless yaml) in functions settings.");
-        }
-    }
-
-
-    private saveInvoke(localLambdaList: LambdaData[], lambdaLocal: LambdaData, data: string, invokeName: string): void {
-        const invokeData: InvokeData = {
-            data,
-            name: invokeName
-        };
-        if (lambdaLocal.invokeData) {
-            const oldData = lambdaLocal!.invokeData.find(obj => obj.name === invokeData.name);
-            if (oldData) {
-                oldData.data = data;
-            } else {
-                lambdaLocal!.invokeData.push(invokeData);
-            }
-        } else {
-            lambdaLocal!.invokeData = [invokeData];
-        }
-        // console.log('lambdaLocal => ' + JSON.stringify(lambdaLocal, undefined, 2));
-        // console.log('localLambdaList => ' + JSON.stringify(localLambdaList, undefined, 2));
-        const currentAwsProfile: string = this.context.workspaceState.get('currentAwsProfile') || 'default';
-        let workspaceData: AwsData[] | undefined = this.context.workspaceState.get('workspaceData') as AwsData[];
-        let awsData: AwsData = workspaceData?.find(obj => obj.profileName === currentAwsProfile) as AwsData;                
-        awsData.lambdaList = localLambdaList;
-
-        this.context.workspaceState.update('workspaceData', workspaceData);
-    }
-
     private invokeLambdaAws(data: string, lambdaData: LambdaData): void {
         try {
             data = data.replaceAll('\n', '');
             data = data.replaceAll('\t', '');
 
-            this.panel!.webview!.html = this.invokeHtml.getLoader();
+            this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, true);
             const input: InvokeCommandInput = {
                 FunctionName: lambdaData.functionName,
                 InvocationType: "RequestResponse",
                 Payload: Buffer.from(JSON.stringify(JSON.parse(data)), "utf8"),
             };
             const command = new InvokeCommand(input);
+
+            // ************************************************ //
+            // ************************************************ //
+            // ************************************************ //
+            // ************************************************ //
+              // PROFILE E REGION
+
+            // ************************************************ //
+            // ************************************************ //
+            // ************************************************ //
+
             const client = new LambdaClient({ region: "us-east-1" });
             client.send(command).then((response: any) => {
                 const responsePayload = JSON.parse(Buffer.from(response.Payload!).toString());
                 console.log('responsePayload => ' + JSON.stringify(responsePayload, undefined, 2));
                 // vscode.window.showInformationMessage(JSON.stringify(response, undefined, 2));
-                this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, responsePayload);
+                this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, responsePayload, false);
             });
             // const res : InvokeCommandOutput = await client.send(command);
         } catch (e) {

@@ -1,48 +1,46 @@
-import { AwsData, LambdaData } from '../intefaces/lambda-data.interface';
-import { BookmarkProvider } from '../providers/bookmark.provider';
 import * as vscode from 'vscode';
-export class BookmarkService {
+import { LambdaData } from '../intefaces/lambda-data.interface';
+import { LambdaProvider } from '../providers/lambda.provider';
+import { ServerlessAssistant } from '../serverless-assistant';
+import { WorkspaceService } from './worskpace.service';
+export class BookmarkService extends ServerlessAssistant {
 
-    bookmarkProvider: BookmarkProvider | undefined;
+    lambdaProvider: LambdaProvider | undefined;
+    workspaceService: WorkspaceService;
 
-    constructor(private context: vscode.ExtensionContext) {
+    constructor() {
+        super();
+        this.workspaceService = new WorkspaceService();
     }
 
     public registerBookmarkDataProvider(viewId: string): void {
         const lambdaList = this.getBookmarkLambdaList();
-        this.bookmarkProvider = new BookmarkProvider(lambdaList);
-        const lambdaDisposable = vscode.window.registerTreeDataProvider(viewId, this.bookmarkProvider);
-        this.context.subscriptions.push(lambdaDisposable);
+        this.lambdaProvider = new LambdaProvider(lambdaList);
+        const lambdaDisposable = vscode.window.registerTreeDataProvider(viewId, this.lambdaProvider);
+        this.getContext().subscriptions.push(lambdaDisposable);
     }
 
     private getBookmarkLambdaList(): LambdaData[] | undefined {
-        const currentAwsProfile = this.context.workspaceState.get('currentAwsProfile') || 'default';
-        const workspaceData = this.context.workspaceState.get('workspaceData') as AwsData[];
-        const awsData = workspaceData?.find(obj => obj.profileName === currentAwsProfile);
-        return awsData?.lambdaList?.filter(obj => obj.bookmark && obj.isActive);
+        return this.workspaceService.getLambdaList()?.filter(obj => obj.bookmark && obj.isActive);
     }
 
     public registerBookmarkRefreshCommand(viewId: string): void {
         let bookmarkRefreshCommand = vscode.commands.registerCommand(viewId, async () => {
-            this.bookmarkProvider?.refresh(this.getBookmarkLambdaList());
+            this.lambdaProvider?.refresh(this.getBookmarkLambdaList());
         });
-        this.context.subscriptions.push(bookmarkRefreshCommand);
+        this.getContext().subscriptions.push(bookmarkRefreshCommand);
     }
 
     public registerBookmarkNewInvokeCommand(viewId: string): void {
         let bookmarNewInvokeCommand = vscode.commands.registerCommand(viewId, async () => {
-            const currentAwsProfile = this.context.workspaceState.get('currentAwsProfile') || 'default';
-            const workspaceData = this.context.workspaceState.get('workspaceData') as AwsData[];
-            const awsData = workspaceData?.find(obj => obj.profileName === currentAwsProfile);
-            // awsData?.lambdaList?.filter(obj => obj.isActive);            
-            const lambdaNameList = awsData?.lambdaList?.map(obj => obj.functionName) || [];
+            const lambdaNameList = this.workspaceService.getLambdaList()?.map(obj => obj.functionName) || [];
             const lambdaName = await vscode.window.showQuickPick(lambdaNameList, { canPickMany: false, title: "Select your lambda:" });
             if (lambdaName) {
-                const lambdaData = awsData?.lambdaList?.find(lambda => lambda.functionName === lambdaName);
+                const lambdaData = this.workspaceService.getLambdaList()?.find(lambda => lambda.functionName === lambdaName);
                 vscode.commands.executeCommand('lambdaAssistant.openInvokeView', lambdaData);
             }
         });
-        this.context.subscriptions.push(bookmarNewInvokeCommand);
+        this.getContext().subscriptions.push(bookmarNewInvokeCommand);
     }
 
 

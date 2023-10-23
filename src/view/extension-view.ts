@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
-export class ExtensionView {
+import { ServerlessAssistant } from '../serverless-assistant';
+export class ExtensionView extends ServerlessAssistant {
 
-    logoUri;
+    iconPath;
 
-    constructor(context: vscode.ExtensionContext) {
-        this.logoUri = vscode.Uri.joinPath(context.extensionUri, 'resources', 'icon.png');
+    constructor() {
+        super();
+        this.iconPath = vscode.Uri.joinPath(this.getContext().extensionUri, 'resources', 'ext_red.png');
     }
 
 }

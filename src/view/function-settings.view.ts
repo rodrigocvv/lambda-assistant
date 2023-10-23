@@ -1,16 +1,18 @@
-import * as fs from 'fs';
-import { load } from "js-yaml";
-import * as path from 'path';
 import * as vscode from 'vscode';
-import { FunctionsSettingsHtml } from './function-settings.html';
 import { AwsData, LambdaData } from '../intefaces/lambda-data.interface';
+import { ExtensionView } from './extension-view';
+import { FunctionsSettingsHtml } from './function-settings.html';
+import { WorkspaceService } from '../services/worskpace.service';
 
-export class FunctionSettingsView {
+export class FunctionSettingsView extends ExtensionView {
 
     functionSettingsHtml: FunctionsSettingsHtml;
+    workspaceService: WorkspaceService;
 
-    constructor(private context: vscode.ExtensionContext) {
+    constructor() {
+        super();
         this.functionSettingsHtml = new FunctionsSettingsHtml();
+        this.workspaceService = new WorkspaceService();
     }
 
     panel: vscode.WebviewPanel | undefined;
@@ -25,7 +27,7 @@ export class FunctionSettingsView {
         let openFunctionsSettingsButonDisposable = vscode.commands.registerCommand(viewId, async (lambdaItem) => {
             this.openView(lambdaItem.lambdaData);
         });
-        this.context.subscriptions.push(openFunctionsSettingsButonDisposable);
+        this.getContext().subscriptions.push(openFunctionsSettingsButonDisposable);
     }
 
     private createPanel(lambdaData: LambdaData) {
@@ -33,24 +35,13 @@ export class FunctionSettingsView {
             { enableScripts: true });
 
         this.panel.webview.html = this.functionSettingsHtml.getWebViewHtml(lambdaData);
+        this.panel.iconPath = this.iconPath;
 
         this.panel.webview.onDidReceiveMessage(
             message => {
                 switch (message.command) {
                     case 'save':
-                        // serverlessName //message.text
-                        const currentAwsProfile: string = this.context.workspaceState.get('currentAwsProfile') || 'default';
-                        let workspaceData: AwsData[] | undefined = this.context.workspaceState.get('workspaceData') as AwsData[];
-                        let awsData: AwsData = workspaceData?.find(obj => obj.profileName === currentAwsProfile) as AwsData;
-
-                        // let localLambdaList = this.context.workspaceState.get('lambdaList') as LambdaData[];
-                        // console.log('localLambdaList 1 => '+ JSON.stringify(localLambdaList, undefined, 2));
-                        const lambdaLocal = awsData.lambdaList!.find((item) => item.functionName === lambdaData.functionName);
-                        lambdaLocal!.serverlessName = message.text && message.text.trim().length > 0 ? message.text : undefined;
-                        this.context.workspaceState.update('workspaceData', workspaceData);
-                        // console.log('localLambdaList 2 => '+ JSON.stringify(localLambdaList, undefined, 2));
-                        // this.context.workspaceState.update('lambdaList', localLambdaList);
-                        // vscode.commands.executeCommand('lambdasView.refresh');
+                        this.workspaceService.setServerlessName(lambdaData.functionName, message.text.trim());
                         this.panel?.dispose();
                         break;
                 }
@@ -66,32 +57,6 @@ export class FunctionSettingsView {
             null,
             undefined
         );
-    }
-
-    private getServerlessSuport() {
-        let serverlessSupport = this.context.workspaceState.get('serverlessSupport');
-        if (serverlessSupport == null || serverlessSupport == undefined) {
-            if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0]) {
-                const fileFolder = vscode?.workspace?.workspaceFolders[0]?.uri.fsPath;
-                const filePath = path.join(fileFolder, 'serverless.yml');
-                if (fs.existsSync(filePath)) {
-                    const fileContent = fs.readFileSync(filePath, 'utf8');
-                    const serviceName = (load(fileContent) as any).service;
-                    return {
-                        available: true,
-                        serviceName
-                    };
-                } else {
-                    return {
-                        available: false
-                    };
-                }
-            }
-        }
-        return {
-            available: serverlessSupport
-        };
-
     }
 
 }

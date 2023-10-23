@@ -4,18 +4,20 @@ import { FunctionSettingsView } from './view/function-settings.view';
 import { InvokeView } from './view/invoke.view';
 import { SettingsView } from './view/settings.view';
 import { BookmarkService } from './services/bookmark.service';
+import { Session } from './session';
 
 export function activate(context: vscode.ExtensionContext) {
+	Session.getInstance().setContext(context);
 	addInitialSettings(context);
-	addViews(context);
+	addViews();
 }
 
-async function addViews(context: vscode.ExtensionContext): Promise<void> {
-	const lambdaService = new LambdaService(context);
-	const settingsView = new SettingsView(context);
-	const functionSettingsView = new FunctionSettingsView(context);
-	const invokeView = new InvokeView(context);
-	const bookmarkService = new BookmarkService(context);
+async function addViews(): Promise<void> {
+	const lambdaService = new LambdaService();
+	const settingsView = new SettingsView();
+	const functionSettingsView = new FunctionSettingsView();
+	const invokeView = new InvokeView();
+	const bookmarkService = new BookmarkService();
 	bookmarkService.registerBookmarkDataProvider('invokeBookmarkView');
 	bookmarkService.registerBookmarkRefreshCommand('invokeBookmarkView.refresh');
 	bookmarkService.registerBookmarkNewInvokeCommand('invokeBookmarkView.add');

@@ -1,8 +1,17 @@
-import { SettingsConfig } from "../intefaces/settings-config.interface";
 import * as vscode from 'vscode';
+import { ServerlessAssistant } from "../serverless-assistant";
+import { WorkspaceService } from "../services/worskpace.service";
 
-export class SettingHtml {
-    public getWebContentSettings(config: SettingsConfig, awsProfileList: string[], logoSrc: vscode.Uri) {
+export class SettingHtml extends ServerlessAssistant {
+
+    workspaceService: WorkspaceService;
+
+    constructor() {
+        super();
+        this.workspaceService = new WorkspaceService();
+    }
+
+    public getWebContentSettings(logoSrc: vscode.Uri) {
         return `
             <HTML>
                 <head>
@@ -71,6 +80,11 @@ export class SettingHtml {
                     function addStage() {
                         vscode.postMessage({ command: 'addStage', text: document.getElementById("newStageName").value });
                     } 
+                    function updateCliCommands() {
+                        const awsCliCommand = document.getElementById("awsCliCommand").value;
+                        const serverlessCliCommand = document.getElementById("serverlessCliCommand").value;
+                        vscode.postMessage({ command: 'updateCliCommands', awsCliCommand, serverlessCliCommand });
+                    }
                 </script>
     
                     <center><h1>Workspace Settings</h1></center>
@@ -81,7 +95,20 @@ export class SettingHtml {
                     <div class="container">
                         <div class="linha">
                             <div class="coluna">
-                                <img src="${logoSrc}" width="150">
+                                <img style="margin-top:30px; margin-left: 140px;" src="${logoSrc}" width="150">
+
+
+                                <div style="margin-left: 140px;border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 60px; width: 200px;">
+                                    <div style="padding-top: 20px; margin-bottom: 20px;">
+                                        AWS Region
+                                        <br><br>
+                                        ${this.workspaceService.getCurrentAwsRegion()}
+                                        <br><br>
+                                        <button style="width: 150px;height:30px;" class="form-button" onclick="changeRegion()">Change Region</button>
+                                    </div>
+                                </div>
+    
+
                             </div>
                             <div class="coluna">
 
@@ -91,11 +118,11 @@ export class SettingHtml {
                                         <table style="">
                                             <tr>
                                                 <td>Lambda Prefix Name</td>
-                                                <td><input type="text" id="prefix" size="20" value="${config.prefixName}"></td>
+                                                <td><input type="text" id="prefix" size="20" value="${this.workspaceService.getPrefix()}"></td>
                                             </tr>
                                             <tr>
                                                 <td>Log Time</td>
-                                                <td><input type="text" id="logTime" value="${config.logTimeString}"></td>
+                                                <td><input type="text" id="logTime" value="${this.workspaceService.getLogTime()}"></td>
                                             </tr>                            
                                         </table>
                                         <br>
@@ -104,20 +131,20 @@ export class SettingHtml {
                                 </div>
 
 
-                                <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 350px;">
+                                <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 70px; width: 350px;">
                                 <div style="padding-top: 20px; margin-bottom: 20px;">
                                 <table>
                                     <tr>
-                                        <td><input type="checkbox" ${config.stageSupport ? 'checked' : ''} id="checkStage" onclick="checkStage()"></td>
+                                        <td><input type="checkbox" ${this.workspaceService.getStageSupport() ? 'checked' : ''} id="checkStage" onclick="checkStage()"></td>
                                         <td>Add stages support</td>
                                     </tr>
                                 </table>
-                                <table style="display: ${config.stageSupport ? '' : 'none'}; padding-top: 20px;">
+                                <table style="display: ${this.workspaceService.getStageSupport() ? '' : 'none'}; padding-top: 20px;">
                                     <tr>
                                         <td><input type="text" id="newStageName"></td>
                                         <td><button onclick="addStage()" style="width:25px;">+</button></td>
                                     </tr>
-                                    ${this.getStageListHtml(config.stageList)}
+                                    ${this.getStageListHtml(this.workspaceService.getStageList())}
                                 </table>
                                 </div>
                             </div>
@@ -131,13 +158,21 @@ export class SettingHtml {
 
                         <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 350px;">
                             <div style="padding-top: 20px; margin-bottom: 20px;">
-                                AWS Region
-                                <br><br>
-                                ${config.awsRegion}
-                                <br><br>
-                                <button style="width: 150px;height:30px;" class="form-button" onclick="changeRegion()">Change Region</button>
+                                AWS Cli Command:
+                                <br>
+                                <input type="text" id="awsCliCommand" size="30" value="${this.workspaceService.getAwsCliCommand()}">
+                                <br>
+                                <br>
+                                Serverless Cli Command:
+                                <br>
+                                <input type="text" id="serverlessCliCommand" size="30" value="${this.workspaceService.getServerlessCliCommand()}">
+                                <br>
+                                <br>
+                                <button style="width: 150px;height:30px;" class="form-button" onclick="updateCliCommands()">Update</button>
                             </div>
                         </div>
+
+
 
                         <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 350px;">
                             <div style="padding-top: 20px; margin-bottom: 20px;">
@@ -149,7 +184,7 @@ export class SettingHtml {
                                         <td><input type="text" id="newAwsProfile"></td>
                                         <td><button onclick="addNewProfile()" style="width:25px;">+</button></td>
                                     </tr>
-                                    ${this.getProfileListHtml(awsProfileList)}
+                                    ${this.getProfileListHtml(this.workspaceService.getAwsProfileList())}
                                 </table>
                             </div>
                         </div>
@@ -174,29 +209,6 @@ export class SettingHtml {
         `;
     }
 
-    private getServerlessSupportHtml(config: SettingsConfig): string {
-        let html = `
-        <table>
-            <tr>
-                <td><input type="checkbox" ${config.serverlessSupport ? 'checked' : ''} id="checkServerless" onclick="checkServerless()"></td>
-                <td>Add serverless support</td>
-            </tr>
-        </table>
-        <table style="display: ${config.serverlessSupport ? '' : 'none'}">
-            <tr>
-                <td>Deploy command. Add you custom parameter:</td>
-            </tr>
-            <tr>
-                <td>serverless deploy ${config.stageSupport ? '--stage stage' : ''} -f {lambdaName}}</td>
-                <td><input type="text" value="${config.servelessDeployParams}" ></td>
-            </tr>
-        </table>
-
-        `;
-
-        return html;
-    }
-
     private getStageListHtml(stageList: string[] | undefined): string {
         let html = '';
         stageList?.forEach((stage: string) => {
@@ -216,11 +228,11 @@ export class SettingHtml {
             html += `
             <tr>
                 <td>${profile} - <button onclick="updateProfile('${profile}')" style="width:55px;">Update</button></td>
-                <td><button onclick="removeProfile('${profile}')" ${profileList.length <2 ? 'disabled' : ''} style="width:25px;">-</button></td>
+                <td><button onclick="removeProfile('${profile}')" ${profileList.length < 2 ? 'disabled' : ''} style="width:25px;">-</button></td>
             </tr>
         `;
         });
         return html;
-    }    
+    }
 
 }
