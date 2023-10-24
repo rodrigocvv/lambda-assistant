@@ -1,10 +1,9 @@
-import { InvokeCommand, InvokeCommandInput, InvokeCommandOutput, LambdaClient } from '@aws-sdk/client-lambda';
 import * as vscode from 'vscode';
-import { AwsData, InvokeData, LambdaData } from '../intefaces/lambda-data.interface';
-import { InvokeHtml } from './invoke.html';
-import { ExtensionView } from './extension-view';
-import { WorkspaceService } from '../services/worskpace.service';
+import { LambdaData } from '../intefaces/lambda-data.interface';
 import { AwsService } from '../services/aws.service';
+import { WorkspaceService } from '../services/worskpace.service';
+import { ExtensionView } from './extension-view';
+import { InvokeHtml } from './invoke.html';
 
 export class InvokeView extends ExtensionView {
 
@@ -82,6 +81,9 @@ export class InvokeView extends ExtensionView {
                         vscode.commands.executeCommand('invokeBookmarkView.refresh');
                         this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
                         break;
+                    case 'editServerlessName':
+                        this.editServerlessName(lambdaData);
+                        break;
                 }
             },
             undefined,
@@ -97,39 +99,23 @@ export class InvokeView extends ExtensionView {
         );
     }
 
-    private invokeLambdaAws(data: string, lambdaData: LambdaData): void {
+    private async editServerlessName(lambdaData: LambdaData): Promise<void> {
+        const serverlessName = await vscode.window.showInputBox({ title: "Add identifier name to " + lambdaData.functionName + " defined in you serverless.yml file under functions section: " });
+        if (serverlessName) {
+            this.workspaceService.setServerlessName(lambdaData.functionName, serverlessName);
+            this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
+        }
+    }
+
+    private async invokeLambdaAws(data: string, lambdaData: LambdaData): Promise<void> {
         try {
-            data = data.replaceAll('\n', '');
-            data = data.replaceAll('\t', '');
-
             this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, true);
-            const input: InvokeCommandInput = {
-                FunctionName: lambdaData.functionName,
-                InvocationType: "RequestResponse",
-                Payload: Buffer.from(JSON.stringify(JSON.parse(data)), "utf8"),
-            };
-            const command = new InvokeCommand(input);
-
-            // ************************************************ //
-            // ************************************************ //
-            // ************************************************ //
-            // ************************************************ //
-              // PROFILE E REGION
-
-            // ************************************************ //
-            // ************************************************ //
-            // ************************************************ //
-
-            const client = new LambdaClient({ region: "us-east-1" });
-            client.send(command).then((response: any) => {
-                const responsePayload = JSON.parse(Buffer.from(response.Payload!).toString());
-                console.log('responsePayload => ' + JSON.stringify(responsePayload, undefined, 2));
-                // vscode.window.showInformationMessage(JSON.stringify(response, undefined, 2));
-                this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, responsePayload, false);
-            });
-            // const res : InvokeCommandOutput = await client.send(command);
-        } catch (e) {
-            console.error("error triggering function", e as Error);
+            const responsePayload = await this.awsService.invokeLambdaAws(lambdaData.functionName, data);
+            this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, responsePayload, false);
+        } catch (e: any) {
+            console.error(e);
+            this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
+            vscode.window.showErrorMessage('Error invoking lambda from aws.');
         }
     }
 

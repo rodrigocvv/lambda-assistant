@@ -24,7 +24,7 @@ export class LambdaService extends ServerlessAssistant {
         this.getContext().subscriptions.push(lambdaDisposable);
     }
 
-    public registerDataRefreshButton(viewId: string): void {
+    public registerDataRefreshCommand(viewId: string): void {
         let refreshLmabdaButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             await this.refreshData();
             this.lambdaProvider?.refresh(this.getLambdaList());
@@ -33,36 +33,7 @@ export class LambdaService extends ServerlessAssistant {
         this.getContext().subscriptions.push(refreshLmabdaButonDisposable);
     }
 
-    public registerDeployButton(viewId: string): void {
-        let deployButtonDisposable = vscode.commands.registerCommand(viewId, async (lambdaItem) => {
-            const workspaceService = this.workspaceService;
-            const localLambda = workspaceService.getLambdaByName(lambdaItem.lambdaData.functionName); // localLambdaList?.find((item) => item.functionName === lambdaItem.lambdaData.functionName);
-            const serverlessName = localLambda?.serverlessName;
-            if (serverlessName) {
-                const terminal = vscode.window.createTerminal('Deploy: ' + serverlessName);
-                const currentStage = workspaceService.getCurrentStage();
-                terminal.sendText(`serverless deploy function -f ${serverlessName} --verbose ${currentStage ? '--stage ' + currentStage : ''} --aws-profile ${workspaceService.getCurrentAwsProfile()} --region ${workspaceService.getCurrentAwsRegion()}`);
-                terminal.show();
-            } else {
-                vscode.window.showErrorMessage("For this operation you need to configure your function name(defined in serverless yaml) in functions settings.");
-            }
-
-        });
-        this.getContext().subscriptions.push(deployButtonDisposable);
-    }
-
-    public registerShowLogButton(viewId: string): void {
-        let showLogDisposable = vscode.commands.registerCommand(viewId, async (lambdaItem) => {
-            const workspaceService = this.workspaceService;
-            const lambdaName = lambdaItem.label;
-            const terminal = vscode.window.createTerminal('Log: ' + lambdaName);
-            terminal.sendText(`aws logs tail /aws/lambda/${lambdaName} --since ${workspaceService.getLogTime()} --follow  --profile ${workspaceService.getCurrentAwsProfile()} --region ${workspaceService.getCurrentAwsRegion()}`);
-            terminal.show();
-        });
-        this.getContext().subscriptions.push(showLogDisposable);
-    }
-
-    public async registerChangeStageButton(viewId: string): Promise<void> {
+    public async registerChangeStageCommand(viewId: string): Promise<void> {
         let changeStageButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             const stageList: string[] = this.getContext().workspaceState.get('stageList') || [];
             const stage = await vscode.window.showQuickPick(stageList, { canPickMany: false, title: "Select your stage:" });
@@ -72,7 +43,7 @@ export class LambdaService extends ServerlessAssistant {
         this.getContext().subscriptions.push(changeStageButonDisposable);
     }
 
-    public async registerChangeProfileButton(viewId: string): Promise<void> {
+    public async registerChangeProfileCommand(viewId: string): Promise<void> {
         let changeProfileButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             const awsProfileList = this.workspaceService.getAwsProfileList();
             const currentAwsProfile = await vscode.window.showQuickPick(awsProfileList, { canPickMany: false, title: "Select your aws profile:" });

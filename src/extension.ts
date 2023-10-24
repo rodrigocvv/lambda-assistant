@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
+import { AwsService } from './services/aws.service';
+import { BookmarkService } from './services/bookmark.service';
 import { LambdaService } from './services/lambda.service';
-import { FunctionSettingsView } from './view/function-settings.view';
+import { Session } from './session';
+import { DetailsView } from './view/details.view';
 import { InvokeView } from './view/invoke.view';
 import { SettingsView } from './view/settings.view';
-import { BookmarkService } from './services/bookmark.service';
-import { Session } from './session';
 
 export function activate(context: vscode.ExtensionContext) {
 	Session.getInstance().setContext(context);
@@ -15,20 +16,22 @@ export function activate(context: vscode.ExtensionContext) {
 async function addViews(): Promise<void> {
 	const lambdaService = new LambdaService();
 	const settingsView = new SettingsView();
-	const functionSettingsView = new FunctionSettingsView();
+	const detailsView = new DetailsView();
+
 	const invokeView = new InvokeView();
 	const bookmarkService = new BookmarkService();
+	const awsService = new AwsService();
 	bookmarkService.registerBookmarkDataProvider('invokeBookmarkView');
 	bookmarkService.registerBookmarkRefreshCommand('invokeBookmarkView.refresh');
 	bookmarkService.registerBookmarkNewInvokeCommand('invokeBookmarkView.add');
 	lambdaService.registerDataProvider('lambdasView');
-	lambdaService.registerDataRefreshButton('lambdasView.refresh');
-	lambdaService.registerChangeStageButton('lambdasView.updateStage');
-	lambdaService.registerChangeProfileButton('lambdasView.changeAwsProfile');
-	lambdaService.registerDeployButton('lambdaItem.deploy');
-	lambdaService.registerShowLogButton('lambdaItem.showLog');
-	settingsView.registerOpenSettingsButton('lambdaAssistant.openSettings');
-	functionSettingsView.registerOpenFunctionSettingsButton('lambdaAssistant.openFunctionSettings');
+	lambdaService.registerDataRefreshCommand('lambdasView.refresh');
+	lambdaService.registerChangeStageCommand('lambdasView.updateStage');
+	lambdaService.registerChangeProfileCommand('lambdasView.changeAwsProfile');
+	awsService.registerDeployCommand('lambdaItem.deploy');
+	awsService.registerShowLogCommand('lambdaItem.showLog');
+	settingsView.registerOpenSettingsCommand('lambdaAssistant.openSettings');
+	detailsView.registerOpenLambdaDetailsCommand('lambdaAssistant.showLambdaDetails');
 	invokeView.registerOpenInvokeViewButton('lambdaItem.invoke');
 	invokeView.registerOpenInvokeViewCommand('lambdaAssistant.openInvokeView');
 }

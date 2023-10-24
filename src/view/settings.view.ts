@@ -16,7 +16,7 @@ export class SettingsView extends ExtensionView {
 
     panel: vscode.WebviewPanel | undefined;
 
-    public registerOpenSettingsButton(viewId: string): void {
+    public registerOpenSettingsCommand(viewId: string): void {
         let openSettingsButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             this.openView();
         });

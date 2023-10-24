@@ -1,6 +1,6 @@
 export interface LambdaData {
     functionName: string;
-    lastModified?: Date;
+    lastModified?: string;
     functionArn: string;
     serverlessName?: string;
     invokeData?: InvokeData[];

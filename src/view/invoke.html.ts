@@ -60,6 +60,9 @@ export class InvokeHtml {
                         function closeResponse(){
                             vscode.postMessage({ command: 'refresh'});
                         }
+                        function editServerlessName(){
+                            vscode.postMessage({ command: 'editServerlessName'});
+                        }
                         function addBookmark() {
                             const data = document.getElementById("invokeData").value;
                             const name = document.getElementById("invokeName").value;
@@ -103,7 +106,12 @@ export class InvokeHtml {
                                 <br><br>
                                 ServerlessName:
                                 <br>
-                                None
+                                <span onclick="changeServerlessName()" style="color:red;${lambdaData.serverlessName ? 'display:none' : ''}" >
+                                    Not informed!
+                                </span>
+                                ${lambdaData.serverlessName ? lambdaData.serverlessName : ''}
+                                <br>
+                                <button onclick="editServerlessName()">Edit</button>
                                 <br><br><br>
                                 <button class="form-button" style="margin-left: 10px;width: 200px;height: 25px;${!lambdaData.bookmark ? '' : 'display:none'}" onclick="addBookmark()">Add to bookmark</button>
                                 <button class="form-button" style="margin-left: 10px;width: 200px;height: 25px;${lambdaData.bookmark === true ? '' : 'display:none'}" onclick="removeBookmark()">Remove from bookmark</button>

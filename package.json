@@ -4,7 +4,7 @@
   "description": "Deploy and invoke your lambdas",
   "publisher": "Rodrigo Villela",
   "icon": "resources/ext_red.png",
-  "version": "0.0.21",
+  "version": "0.0.31",
   "repository": {
     "type": "git",
     "url": "https://github.com/rodrigocvv/lambda-assistant"
@@ -42,8 +42,8 @@
         "title": "Invoke"
       },
       {
-        "command": "lambdaAssistant.openFunctionSettings",
-        "title": "Function Settings"
+        "command": "lambdaAssistant.showLambdaDetails",
+        "title": "Show Details"
       },
       {
         "command": "lambdasView.updateStage",
@@ -115,11 +115,11 @@
       "view/item/context": [
         {
           "command": "lambdaItem.showLog",
-          "when": "view == lambdasView"
+          "when": "view == lambdasView || view == invokeBookmarkView"
         },
         {
-          "command": "lambdaAssistant.openFunctionSettings",
-          "when": "view == lambdasView"
+          "command": "lambdaAssistant.showLambdaDetails",
+          "when": "view == lambdasView || view == invokeBookmarkView"
         },
         {
           "command": "lambdaItem.deploy",
