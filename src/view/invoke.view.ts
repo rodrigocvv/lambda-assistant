@@ -103,7 +103,8 @@ export class InvokeView extends ExtensionView {
         const serverlessName = await vscode.window.showInputBox({ title: "Add identifier name to " + lambdaData.functionName + " defined in you serverless.yml file under functions section: " });
         if (serverlessName) {
             this.workspaceService.setServerlessName(lambdaData.functionName, serverlessName);
-            this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
+            vscode.commands.executeCommand('lambdasView.updateView');
+            this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(this.workspaceService.getLambdaByName(lambdaData.functionName)!, undefined, false);
         }
     }
 

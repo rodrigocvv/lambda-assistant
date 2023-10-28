@@ -8,6 +8,7 @@ export interface LambdaData {
     timeout?: number;
     codeSize?: number;
     bookmark?: boolean;
+    tags?: any;
 }
 
 export interface InvokeData {

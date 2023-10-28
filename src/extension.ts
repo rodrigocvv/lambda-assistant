@@ -26,6 +26,7 @@ async function addViews(): Promise<void> {
 	bookmarkService.registerBookmarkNewInvokeCommand('invokeBookmarkView.add');
 	lambdaService.registerDataProvider('lambdasView');
 	lambdaService.registerDataRefreshCommand('lambdasView.refresh');
+	lambdaService.registerUpdateViewCommand('lambdasView.updateView');
 	lambdaService.registerChangeStageCommand('lambdasView.updateStage');
 	lambdaService.registerChangeProfileCommand('lambdasView.changeAwsProfile');
 	awsService.registerDeployCommand('lambdaItem.deploy');

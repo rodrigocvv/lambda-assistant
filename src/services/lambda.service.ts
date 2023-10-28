@@ -24,6 +24,14 @@ export class LambdaService extends ServerlessAssistant {
         this.getContext().subscriptions.push(lambdaDisposable);
     }
 
+    public registerUpdateViewCommand(viewId: string): void {
+        let refreshLmabdaButonDisposable = vscode.commands.registerCommand(viewId, async () => {
+            this.lambdaProvider?.refresh(this.getLambdaList());
+            vscode.commands.executeCommand('invokeBookmarkView.refresh');
+        });
+        this.getContext().subscriptions.push(refreshLmabdaButonDisposable);
+    }
+
     public registerDataRefreshCommand(viewId: string): void {
         let refreshLmabdaButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             await this.refreshData();

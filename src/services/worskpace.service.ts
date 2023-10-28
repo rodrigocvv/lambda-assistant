@@ -46,13 +46,13 @@ export class WorkspaceService extends ServerlessAssistant {
         return this.getContext().workspaceState.get('stageSupport') || false;
     }
 
-    public addStage(stage: string): void {
-        let stageList: string[] = this.getContext().workspaceState.get('stageList') || [];
-        stageList = stageList.filter(stage => stage !== stage);
-        this.getContext().workspaceState.update('stageList', stageList);
-    }
-
     public removeStage(stage: string): void {
+        let stageList: string[] = this.getContext().workspaceState.get('stageList') || [];
+        stageList = stageList.filter(stageName => stageName !== stage);
+        this.getContext().workspaceState.update('stageList', stageList);
+    }    
+
+    public addStage(stage: string): void {
         const stageList: string[] = this.getContext().workspaceState.get('stageList') || [];
         stageList.push(stage);
         this.getContext().workspaceState.update('stageList', stageList);
@@ -113,6 +113,11 @@ export class WorkspaceService extends ServerlessAssistant {
 
     public setPrefix(prefix: string): void {
         this.getContext().workspaceState.update('prefixName', prefix);
+    }
+
+    public isLambdaFromWorkspace(lambdaName: string): boolean {
+        let prefix: string | undefined = this.getContext().workspaceState.get('prefixName') as string;
+        return lambdaName.startsWith(prefix) ? true : false;
     }
 
     public getPrefix() {

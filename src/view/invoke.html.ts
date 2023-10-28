@@ -1,6 +1,15 @@
 import { InvokeData, LambdaData } from '../intefaces/lambda-data.interface';
+import { ServerlessAssistant } from '../serverless-assistant';
+import { WorkspaceService } from '../services/worskpace.service';
 
-export class InvokeHtml {
+export class InvokeHtml extends ServerlessAssistant {
+
+    workspaceService: WorkspaceService;
+
+    constructor(){
+        super();
+        this.workspaceService = new WorkspaceService();
+    }
 
     public selectedData = 'request1';
 
@@ -104,14 +113,16 @@ export class InvokeHtml {
                                 <br>
                                 <h2>${lambdaData.functionName}</h2>
                                 <br><br>
-                                ServerlessName:
-                                <br>
-                                <span onclick="changeServerlessName()" style="color:red;${lambdaData.serverlessName ? 'display:none' : ''}" >
-                                    Not informed!
-                                </span>
-                                ${lambdaData.serverlessName ? lambdaData.serverlessName : ''}
-                                <br>
-                                <button onclick="editServerlessName()">Edit</button>
+                                <div style="${this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? '' : 'display:none'}">
+                                    ServerlessName:
+                                    <br>
+                                    <span onclick="changeServerlessName()" style="color:red;${lambdaData.serverlessName  ? 'display:none' : ''}" >
+                                        Not informed!
+                                    </span>
+                                    ${lambdaData.serverlessName ? lambdaData.serverlessName : ''}
+                                    <br>
+                                    <button onclick="editServerlessName()">Edit</button>
+                                </div>
                                 <br><br><br>
                                 <button class="form-button" style="margin-left: 10px;width: 200px;height: 25px;${!lambdaData.bookmark ? '' : 'display:none'}" onclick="addBookmark()">Add to bookmark</button>
                                 <button class="form-button" style="margin-left: 10px;width: 200px;height: 25px;${lambdaData.bookmark === true ? '' : 'display:none'}" onclick="removeBookmark()">Remove from bookmark</button>
@@ -153,8 +164,14 @@ export class InvokeHtml {
                                     <textarea id="invokeData" rows="20" cols="70">${this.getSelectedData(lambdaData) || this.getDefaultData()}</textarea>                                
                                     <br>
                                     <br>
-                                    <button style="margin-left:0px; width: 170px; height: 40px;" class="form-button" onclick="invokeLocal()">Invoke Local</button>
-                                    <button style="margin-left:200px;; width: 170px; height: 40px;" class="form-button" onclick="invokeAws()">Invoke AWS</button>
+                                    <div style="${this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? '' : 'display:none'}">
+                                        <button style="margin-left:0px; width: 170px; height: 40px;" class="form-button" onclick="invokeLocal()">Invoke Local</button>
+                                        <button style="margin-left:200px;; width: 170px; height: 40px;" class="form-button" onclick="invokeAws()">Invoke AWS</button>
+                                    </div>
+                                    <div style="${this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? 'display:none' : ''}">
+                                        <button style="width: 170px; height: 40px;" class="form-button" onclick="invokeAws()">Invoke AWS</button>
+                                    </div>
+
                                 
                             </div>
                         </div>
