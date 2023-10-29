@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { LambdaData } from '../intefaces/lambda-data.interface';
+import { LambdaData } from '../interfaces/lambda-data.interface';
 import { LambdaProvider } from '../providers/lambda.provider';
 import { ServerlessAssistant } from '../serverless-assistant';
 import { WorkspaceService } from './worskpace.service';

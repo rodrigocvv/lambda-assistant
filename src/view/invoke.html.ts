@@ -1,4 +1,4 @@
-import { InvokeData, LambdaData } from '../intefaces/lambda-data.interface';
+import { InvokeData, LambdaData } from '../interfaces/lambda-data.interface';
 import { ServerlessAssistant } from '../serverless-assistant';
 import { WorkspaceService } from '../services/worskpace.service';
 

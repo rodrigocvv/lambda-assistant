@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { load } from "js-yaml";
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { AwsData, InvokeData, LambdaData } from '../intefaces/lambda-data.interface';
+import { AwsData, InvokeData, LambdaData } from '../interfaces/lambda-data.interface';
 import { ServerlessAssistant } from "../serverless-assistant";
 import { Session } from "../session";
 
@@ -33,7 +33,7 @@ export class WorkspaceService extends ServerlessAssistant {
             };
         }
         workspaceData = workspaceData ? workspaceData : [awsData];
-        console.log('workspaceData => ' + JSON.stringify(workspaceData, undefined, 2));
+        // console.log('workspaceData => ' + JSON.stringify(workspaceData, undefined, 2));
         this.getContext().workspaceState.update('workspaceData', workspaceData);
     }
 
@@ -68,10 +68,12 @@ export class WorkspaceService extends ServerlessAssistant {
         return this.getContext().workspaceState.get('stageList') || [];
     }
 
-    public getCurrentAwsProfile(): string {
-        const context = Session.getInstance().getContext()!;
-        const currentAwsProfile: string = context.workspaceState.get('currentAwsProfile') || 'default';
-        return currentAwsProfile;
+    public getCurrentAwsProfile(): string | undefined {
+        return this.getContext().workspaceState.get('currentAwsProfile');
+    }
+
+    public setCurrentAwsProfile(awsProfile: string): void {
+        this.getContext().workspaceState.update('currentAwsProfile', awsProfile);
     }
 
     public getCurrentAwsRegion(): string {
@@ -111,6 +113,10 @@ export class WorkspaceService extends ServerlessAssistant {
         vscode.commands.executeCommand('setContext', 'isExtesionConfigured', true);
     }
 
+    public isExtensionConfigured(): boolean {
+        return this.getContext().workspaceState.get('isExtesionConfigured') || false;
+    }
+
     public setPrefix(prefix: string): void {
         this.getContext().workspaceState.update('prefixName', prefix);
     }
@@ -132,7 +138,7 @@ export class WorkspaceService extends ServerlessAssistant {
                 }
             }
         }
-        return prefix;
+        return prefix || '';
     }
 
 
@@ -245,5 +251,12 @@ export class WorkspaceService extends ServerlessAssistant {
         this.getContext().workspaceState.update('workspaceData', workspaceData);
     }
 
+    public getTerminalMode(): string{
+        return this.getContext().workspaceState.get('terminalMode') || 'windowsCmd';
+    }
+
+    public setTerminalMode(terminalMode: string): void {
+        this.getContext().workspaceState.update('terminalMode', terminalMode);
+    }
 
 }

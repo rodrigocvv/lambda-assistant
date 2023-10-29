@@ -59,7 +59,11 @@ export class SettingHtml extends ServerlessAssistant {
                     }      
                     function updateProfile(profile) {
                         vscode.postMessage({ command: 'updateProfile', profileName: profile });
-                    }                                                    
+                    }         
+                    function changeTerminalMode(terminalMode) {
+                        vscode.postMessage({ command: 'changeTerminalMode', terminalMode: terminalMode.value });
+                    }                     
+                    
                     function removeProfile(profile) {
                         vscode.postMessage({ command: 'removeProfile', profileName: profile });
                     }                                                    
@@ -124,6 +128,15 @@ export class SettingHtml extends ServerlessAssistant {
                                                 <td>Log Time</td>
                                                 <td><input type="text" id="logTime" value="${this.workspaceService.getLogTime()}"></td>
                                             </tr>                            
+                                            <tr>
+                                                <td>Terminal Type</td>
+                                                <td>
+                                                    <select name="terminalMode" id="terminalMode" onchange="changeTerminalMode(this)">
+                                                        <option value="windowsCmd" ${this.workspaceService.getTerminalMode() === 'windowsCmd' ? 'selected' : ''}>Windows Cmd</option>
+                                                        <option value="shell" ${this.workspaceService.getTerminalMode() === 'shell' ? 'selected' : ''}>Shell</option>
+                                                    </select>
+                                                </td>
+                                            </tr>                            
                                         </table>
                                         <br>
                                         <button style="width: 150px;height:30px;" class="form-button" onclick="save()">Save</button>
@@ -131,7 +144,7 @@ export class SettingHtml extends ServerlessAssistant {
                                 </div>
 
 
-                                <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 70px; width: 350px;">
+                                <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 50px; width: 350px;">
                                 <div style="padding-top: 20px; margin-bottom: 20px;">
                                 <table>
                                     <tr>
@@ -209,6 +222,8 @@ export class SettingHtml extends ServerlessAssistant {
         `;
     }
 
+
+
     private getStageListHtml(stageList: string[] | undefined): string {
         let html = '';
         stageList?.forEach((stage: string) => {
@@ -234,5 +249,144 @@ export class SettingHtml extends ServerlessAssistant {
         });
         return html;
     }
+
+
+    public getWebContentWelcome(logoSrc: vscode.Uri) {
+        return `
+            <HTML>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        .form-button {
+                            background: #0066A2;
+                            color: white;
+                            border-style: outset;
+                            border-color: #0066A2;
+                            height: 50px;
+                            width: 100px;
+                            font: bold15px arial,sans-serif;
+                            text-shadow: none;
+                        }
+                        .container {
+                            max-width: 100%;
+                            margin: auto;
+                          }
+                          
+                          .linha {
+                            display: flex;
+                            flex-wrap: wrap;
+                            padding: 0 4px;
+                          }
+                          
+                          .coluna {
+                            flex: 25%;
+                            padding: 0 4px;
+                          }
+
+                    </style>                    
+                    <title>Settings</title>
+                </head>
+                <BODY>
+                    <script>
+                    const vscode = acquireVsCodeApi();
+                    function start() {
+                        var prefix = document.getElementById("prefix").value;
+                        var awsProfile = document.getElementById("awsProfile").value;
+                        var awsRegion = document.getElementById("awsRegion").value;
+                        vscode.postMessage({ command: 'start', prefix, awsProfile, awsRegion });
+                    }
+                </script>
+                    <center><h1>Welcoma to Serverless Assistant Extension</h1></center>
+                        <div class="container">
+                            <div class="linha">
+                                <div class="coluna" style="max-width: 25%">
+                                    <img style="margin-top:30px; margin-left: 140px;" src="${logoSrc}" width="150">
+                                </div>
+                                <div class="coluna">
+
+                                    <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 500px;">
+                                    <center>
+                                        <br>
+                                        <div style="margin-left: 30px; margin-right: 30px;">This extension searches lambdas and filter using your project/workspace prefix name. If you do not have a prefix use an empty string to load all lambdas.</div>
+
+                                        <br><br>
+
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    Workspace prefix:
+                                                </td>
+                                                <td>
+                                                    <input type="text" id="prefix" size="20" value="${this.workspaceService.getPrefix()}">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    Profile Name(credentials file):
+                                                </td>
+                                                <td>
+                                                    <input type="text" id="awsProfile" size="20" value="${this.workspaceService.getCurrentAwsProfile() ? this.workspaceService.getCurrentAwsProfile() : 'default'}">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    Aws Region:
+                                                </td>
+                                                <td>
+                                                    <input type="text" id="awsRegion" size="20" value="${this.workspaceService.getCurrentAwsRegion()}">
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        
+                                        <br><br>
+                                        <button style="width: 150px;height:30px;" class="form-button" onclick="start()">Start</button>
+                                        <br>
+                                        <br>
+                                        <br>
+                                        </center>
+                                    </div>
+
+                                </div> <!-- coluna -->
+                            </div> <!-- linha -->
+                        </div> <!-- container -->
+                        <br>
+                </BODY>
+            </HTML>
+        `;
+    }
+
+
+    public getWebContentLoading(): string {
+        return `
+        <HTML>
+            <HEAD>
+                <style>
+                    .loader {
+                        border: 16px solid #f3f3f3; /* Light grey */
+                        border-top: 16px solid #3498db; /* Blue */
+                        border-radius: 50%;
+                        width: 120px;
+                        height: 120px;
+                        animation: spin 2s linear infinite;
+                    }
+                    
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+            </HEAD>
+            <BODY>
+                <BR><BR><BR><BR><BR><BR><BR>
+                <CENTER>
+                    <div class="loader"></div>
+                </CENTER>
+            </BODY>
+        </HTML>
+        `;
+    }
+
 
 }

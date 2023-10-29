@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { AwsData, LambdaData } from '../intefaces/lambda-data.interface';
+import { AwsData, LambdaData } from '../interfaces/lambda-data.interface';
 import { ExtensionView } from './extension-view';
 import { WorkspaceService } from '../services/worskpace.service';
 import { DetailsHtml } from './details.html';

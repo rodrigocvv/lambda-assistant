@@ -1,4 +1,4 @@
-import { LambdaData } from "../intefaces/lambda-data.interface";
+import { LambdaData } from "../interfaces/lambda-data.interface";
 
 export class DetailsHtml {
     public getWebViewHtml(lambdaData: LambdaData) {

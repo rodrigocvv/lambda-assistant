@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { LambdaData } from '../intefaces/lambda-data.interface';
+import { LambdaData } from '../interfaces/lambda-data.interface';
 import { LambdaProvider } from '../providers/lambda.provider';
 import { ServerlessAssistant } from "../serverless-assistant";
 import { AwsService } from "./aws.service";
@@ -36,7 +36,8 @@ export class LambdaService extends ServerlessAssistant {
         let refreshLmabdaButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             await this.refreshData();
             this.lambdaProvider?.refresh(this.getLambdaList());
-            vscode.commands.executeCommand('invokeBookmarkView.refresh');
+            await vscode.commands.executeCommand('invokeBookmarkView.refresh');
+            console.log('fim refresh real!')
         });
         this.getContext().subscriptions.push(refreshLmabdaButonDisposable);
     }
@@ -55,9 +56,11 @@ export class LambdaService extends ServerlessAssistant {
         let changeProfileButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             const awsProfileList = this.workspaceService.getAwsProfileList();
             const currentAwsProfile = await vscode.window.showQuickPick(awsProfileList, { canPickMany: false, title: "Select your aws profile:" });
-            this.getContext().workspaceState.update('currentAwsProfile', currentAwsProfile);
-            this.lambdaProvider?.refresh(this.getLambdaList());
-            vscode.commands.executeCommand('invokeBookmarkView.refresh');
+            if (currentAwsProfile){
+                this.workspaceService.setCurrentAwsProfile(currentAwsProfile);
+                this.lambdaProvider?.refresh(this.getLambdaList());
+                vscode.commands.executeCommand('invokeBookmarkView.refresh');
+            }
         });
         this.getContext().subscriptions.push(changeProfileButonDisposable);
     }
@@ -71,7 +74,7 @@ export class LambdaService extends ServerlessAssistant {
 
     public async refreshData(): Promise<void> {
         console.log('refreshing data!');
-        vscode.window.withProgress({
+        await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: "Retrieving data from aws",
             cancellable: true
