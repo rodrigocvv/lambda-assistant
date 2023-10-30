@@ -32,12 +32,12 @@ export class LambdaService extends ServerlessAssistant {
         this.getContext().subscriptions.push(refreshLmabdaButonDisposable);
     }
 
-    public registerDataRefreshCommand(viewId: string): void {
+    public async registerDataRefreshCommand(viewId: string): Promise<void> {
         let refreshLmabdaButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             await this.refreshData();
-            this.lambdaProvider?.refresh(this.getLambdaList());
+            const lambdaList = this.getLambdaList();
+            this.lambdaProvider?.refresh(lambdaList);
             await vscode.commands.executeCommand('invokeBookmarkView.refresh');
-            console.log('fim refresh real!')
         });
         this.getContext().subscriptions.push(refreshLmabdaButonDisposable);
     }
@@ -66,9 +66,12 @@ export class LambdaService extends ServerlessAssistant {
     }
 
     public getLambdaList(): LambdaData[] | undefined {
-        const workspaceService = this.workspaceService;
-        let lambdaList: LambdaData[] | undefined = workspaceService.getLambdaList();
-        const filteredList = lambdaList?.filter(obj => obj.functionName?.startsWith(workspaceService.getPrefixWithStage()) && obj.isActive);
+        let lambdaList: LambdaData[] | undefined = this.workspaceService.getLambdaList();
+        let filteredList = lambdaList?.filter(obj => obj.isActive);
+        const prefix = this.workspaceService.getPrefixWithStage();
+        if (prefix && prefix.length > 0){
+            filteredList = filteredList?.filter(obj => obj.functionName?.startsWith(this.workspaceService.getPrefixWithStage()));
+        }
         return filteredList;
     }
 

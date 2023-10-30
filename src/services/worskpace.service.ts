@@ -9,8 +9,9 @@ import { Session } from "../session";
 export class WorkspaceService extends ServerlessAssistant {
 
     public getLambdaList(): LambdaData[] | undefined {
-        const currentAwsProfile = this.getContext().workspaceState.get('currentAwsProfile') || 'default';
+        const currentAwsProfile = this.getContext().workspaceState.get('currentAwsProfile');
         const workspaceData = this.getContext().workspaceState.get('workspaceData') as AwsData[];
+        // console.log('workspaceData => '+ JSON.stringify(workspaceData, undefined, 2));
         const awsData = workspaceData?.find(obj => obj.profileName === currentAwsProfile);
         return awsData?.lambdaList;
     }

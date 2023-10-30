@@ -137,7 +137,6 @@ export class SettingsView extends ExtensionView {
             this.workspaceService.setPrefix(prefix);
             this.workspaceService.setAwsRegion(awsRegion);
             this.workspaceService.setCurrentAwsProfile(awsProfile);
-            this.workspaceService.updateProfileName('default', awsProfile);
             await vscode.commands.executeCommand('lambdasView.refresh');
             this.workspaceService.setExtensionConfigured();
             this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);

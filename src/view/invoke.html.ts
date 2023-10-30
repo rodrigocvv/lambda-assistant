@@ -138,16 +138,14 @@ export class InvokeHtml extends ServerlessAssistant {
 
                             <div class="loader" style="margin-left:170px;margin-top:130px;${loading ? '' : 'display:none'}"></div>
                             <div style="${invokeResponse ? '' : 'display:none'}">
-                                <table style="">
-                                    <tr>
-                                        <td style="width: 500px;word-break: break-all;"><div style="margin-left:50px">
-                                            <h3>Response:</h3>
-                                            <br>${JSON.stringify(invokeResponse, undefined, 2)}
-                                        </td>
-                                    </tr>
-                                </table>
-                                <br><br><br>
-                                <button style="width: 250px;" class="form-button" onclick="closeResponse()">Close Response</button>
+
+                                <div style="width: 500px;word-break: break-all;margin-left:50px;text-align: left;">
+                                     <h3>Response:</h3>
+                                     <br>
+                                     <pre id="json">${JSON.stringify(invokeResponse, undefined, 2)}</pre>
+                                    <br><br><br>
+                                    <button style="width: 250px;" class="form-button" onclick="closeResponse()">Close Response</button>
+                                </div>
 
                             </div>
 

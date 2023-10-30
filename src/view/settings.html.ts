@@ -326,7 +326,7 @@ export class SettingHtml extends ServerlessAssistant {
                                                     Profile Name(credentials file):
                                                 </td>
                                                 <td>
-                                                    <input type="text" id="awsProfile" size="20" value="${this.workspaceService.getCurrentAwsProfile() ? this.workspaceService.getCurrentAwsProfile() : 'default'}">
+                                                    <input type="text" id="awsProfile" size="20" value="${this.workspaceService.getCurrentAwsProfile() || 'default'}">
                                                 </td>
                                             </tr>
                                             <tr>

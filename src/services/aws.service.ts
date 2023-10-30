@@ -83,13 +83,9 @@ export class AwsService extends ServerlessAssistant {
         const credentials: AwsCredentialIdentityProvider = fromIni({ profile: awsProfile });
         const provider = await credentials();
         if (!provider){
-            console.log('entrei no if 22222!');
             vscode.window.showErrorMessage('Error trying to use credentials from profile: ' + awsProfile);
-            
             throw new Error('Invalid Credentials!');
-
         }
-        console.log('credentials => '+ JSON.stringify(credentials, undefined, 2));
         return { region: awsRegion, credentials: credentials };
 
     }
@@ -126,6 +122,7 @@ export class AwsService extends ServerlessAssistant {
             lastModified: functionConfiguration.LastModified,
             timeout: functionConfiguration.Timeout,
             codeSize: functionConfiguration.CodeSize,
+            isActive: true,
             tags
         };
     }
