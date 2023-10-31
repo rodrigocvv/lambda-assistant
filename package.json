@@ -4,7 +4,7 @@
   "description": "Deploy and invoke your lambdas",
   "publisher": "Rodrigo Villela",
   "icon": "resources/ext_red.png",
-  "version": "0.0.4",
+  "version": "0.0.41",
   "repository": {
     "type": "git",
     "url": "https://github.com/rodrigocvv/lambda-assistant"
@@ -15,6 +15,19 @@
   "categories": [
     "Other"
   ],
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "build": "vsce package",
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild-base": "rimraf out && esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "test-compile": "tsc -p ./"
+  },
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
@@ -22,7 +35,7 @@
       {
         "command": "lambdasView.refresh",
         "title": "Refresh",
-        "icon":"$(sync)"
+        "icon": "$(sync)"
       },
       {
         "command": "invokeBookmarkView.add",
@@ -143,15 +156,6 @@
       }
     ]
   },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
-    "build": "vsce package"
-  },
   "devDependencies": {
     "@types/glob": "^8.1.0",
     "@types/js-yaml": "^4.0.5",
@@ -161,9 +165,11 @@
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
     "@vscode/test-electron": "^2.3.2",
+    "esbuild": "^0.19.5",
     "eslint": "^8.41.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
+    "rimraf": "^5.0.5",
     "typescript": "^5.1.3"
   },
   "dependencies": {

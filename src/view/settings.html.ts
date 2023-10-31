@@ -297,7 +297,7 @@ export class SettingHtml extends ServerlessAssistant {
                         vscode.postMessage({ command: 'start', prefix, awsProfile, awsRegion });
                     }
                 </script>
-                    <center><h1>Welcoma to Serverless Assistant Extension</h1></center>
+                    <center><h1>Welcome to Serverless Assistant Extension</h1></center>
                         <div class="container">
                             <div class="linha">
                                 <div class="coluna" style="max-width: 25%">
