@@ -1,6 +1,9 @@
-# lambda-assistant README
+## Serverless Assistant extension
 
-This extesion will help with your lambdas operations.
+This extesion help you to invokes, watch logs and deploy your lambdas.
+
+### Install
+![Install](docs/install.gif "Initial Settings")
 
 ## Features
 

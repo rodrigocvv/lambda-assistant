@@ -14,7 +14,6 @@ export class InvokeHtml extends ServerlessAssistant {
     public selectedData = 'request1';
 
     public getWebViewHtml(lambdaData: LambdaData, invokeResponse: any, loading: boolean) {
-        console.log('getHtml');
         return `
             <HTML>
                 <head>
@@ -33,13 +32,11 @@ export class InvokeHtml extends ServerlessAssistant {
                             max-width: 100%;
                             margin: auto;
                         }
-                              
                         .linha {
                             display: flex;
                             flex-wrap: wrap;
                             padding: 0 4px;
                         }
-                              
                         .coluna {
                             max-width: 80%;
                             padding: 0 4px;
@@ -52,12 +49,10 @@ export class InvokeHtml extends ServerlessAssistant {
                             height: 120px;
                             animation: spin 2s linear infinite;
                         }
-                        
                         @keyframes spin {
                             0% { transform: rotate(0deg); }
                             100% { transform: rotate(360deg); }
                         }
-                        
                     </style>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -105,53 +100,43 @@ export class InvokeHtml extends ServerlessAssistant {
                     </script>
     
                 <center>
-                <div class="container">
-                    <div class="linha">
-                        <div class="coluna" style="width: 400px;">
-                            
-                            <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 50px; width: 350px;">
-                                <br>
-                                <h2>${lambdaData.functionName}</h2>
-                                <br><br>
-                                <div style="${this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? '' : 'display:none'}">
-                                    ServerlessName:
+                    <div class="container">
+                        <div class="linha">
+                            <div class="coluna" style="width: 400px;">
+                                <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 50px; width: 350px;">
                                     <br>
-                                    <span onclick="changeServerlessName()" style="color:red;${lambdaData.serverlessName ? 'display:none' : ''}" >
-                                        Not informed!
-                                    </span>
-                                    ${lambdaData.serverlessName ? lambdaData.serverlessName : ''}
-                                    <br>
-                                    <button onclick="editServerlessName()">Edit</button>
-                                </div>
-                                <br><br><br>
-                                <button class="form-button" style="margin-left: 10px;width: 200px;height: 25px;${!lambdaData.bookmark ? '' : 'display:none'}" onclick="addBookmark()">Add to bookmark</button>
-                                <button class="form-button" style="margin-left: 10px;width: 200px;height: 25px;${lambdaData.bookmark === true ? '' : 'display:none'}" onclick="removeBookmark()">Remove from bookmark</button>
-                                <br><br>
-                            </div>
-
-
-                        </div>
-
-                        <div class="coluna" style="margin-left: 100px;">
-                            <br>
-
-
-                            <div class="loader" style="margin-left:170px;margin-top:130px;${loading ? '' : 'display:none'}"></div>
-                            <div style="${invokeResponse ? '' : 'display:none'}">
-
-                                <div style="width: 500px;word-break: break-all;margin-left:50px;text-align: left;">
-                                     <h3>Response:</h3>
-                                     <br>
-                                     <pre id="json">${JSON.stringify(invokeResponse, undefined, 2)}</pre>
+                                    <h2>${lambdaData.functionName}</h2>
+                                    <br><br>
+                                    <div style="${this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? '' : 'display:none'}">
+                                        ServerlessName:
+                                        <br>
+                                        <span onclick="changeServerlessName()" style="color:red;${lambdaData.serverlessName ? 'display:none' : ''}" >
+                                            Not informed!
+                                        </span>
+                                        ${lambdaData.serverlessName ? lambdaData.serverlessName : ''}
+                                        <br>
+                                        <button onclick="editServerlessName()">Edit</button>
+                                    </div>
                                     <br><br><br>
-                                    <button style="width: 250px;" class="form-button" onclick="closeResponse()">Close Response</button>
+                                    <button class="form-button" style="margin-left: 10px;width: 200px;height: 25px;${!lambdaData.bookmark ? '' : 'display:none'}" onclick="addBookmark()">Add to bookmark</button>
+                                    <button class="form-button" style="margin-left: 10px;width: 200px;height: 25px;${lambdaData.bookmark === true ? '' : 'display:none'}" onclick="removeBookmark()">Remove from bookmark</button>
+                                    <br><br>
                                 </div>
-
                             </div>
 
-                            <div style="margin-top:30px;${invokeResponse || loading ? 'display:none' : ''}">
-
-                                
+                            <div class="coluna" style="margin-left: 100px;">
+                                <br>
+                                <div class="loader" style="margin-left:170px;margin-top:130px;${loading ? '' : 'display:none'}"></div>
+                                <div style="${invokeResponse ? '' : 'display:none'}">
+                                    <div style="width: 500px;word-break: break-all;margin-left:50px;text-align: left;">
+                                        <h3>Response:</h3>
+                                        <br>
+                                        <pre id="json">${JSON.stringify(invokeResponse, undefined, 2)}</pre>
+                                        <br><br><br>
+                                        <button style="width: 250px;" class="form-button" onclick="closeResponse()">Close Response</button>
+                                    </div>
+                                </div>
+                                <div style="margin-top:30px;${invokeResponse || loading ? 'display:none' : ''}">
                                     <select name="invokeName" id="invokeName" onchange="changeName(this)">
                                         <option value="request1" ${this.selectedData === 'request1' ? 'selected' : ''}>request1</option>
                                         <option value="request2" ${this.selectedData === 'request2' ? 'selected' : ''}>request2</option>
@@ -160,8 +145,7 @@ export class InvokeHtml extends ServerlessAssistant {
                                     <button onclick="format()" style="margin-left:320px;">Format JSON</button>
                                     <br>
                                     <textarea id="invokeData" rows="20" cols="70">${this.getSelectedData(lambdaData) || this.getDefaultData()}</textarea>                                
-                                    <br>
-                                    <br>
+                                    <br><br>
                                     <div style="${this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? '' : 'display:none'}">
                                         <button style="margin-left:0px; width: 170px; height: 40px;" class="form-button" onclick="invokeLocal()">Invoke Local</button>
                                         <button style="margin-left:200px;; width: 170px; height: 40px;" class="form-button" onclick="invokeAws()">Invoke AWS</button>
@@ -169,56 +153,21 @@ export class InvokeHtml extends ServerlessAssistant {
                                     <div style="${this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? 'display:none' : ''}">
                                         <button style="width: 170px; height: 40px;" class="form-button" onclick="invokeAws()">Invoke AWS</button>
                                     </div>
-
-                                
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                    </center>
-                </BODY>
-            </HTML>
-        `;
-    }
-
-    public getLoader(): string {
-        return `
-        <HTML>
-            <HEAD>
-                <style>
-                    .loader {
-                        border: 16px solid #f3f3f3; /* Light grey */
-                        border-top: 16px solid #3498db; /* Blue */
-                        border-radius: 50%;
-                        width: 120px;
-                        height: 120px;
-                        animation: spin 2s linear infinite;
-                    }
-                    
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                </style>
-            </HEAD>
-            <BODY>
-                <BR><BR><BR><BR><BR><BR><BR>
-                <CENTER>
-                    <div class="loader"></div>
-                </CENTER>
+                </center>
             </BODY>
         </HTML>
         `;
     }
 
     private getSelectedData(lambdaData: LambdaData) {
-        // console.log('p1');
         let invokeContent: InvokeData | undefined;
         if (this.selectedData && lambdaData.invokeData && lambdaData.invokeData.length > 0 && lambdaData.invokeData && Array.isArray(lambdaData.invokeData)) {
             invokeContent = lambdaData.invokeData.find((obj) => obj.name === this.selectedData);
         }
-        // console.log('p2 - ' + invokeContent?.data);
         return invokeContent?.data;
     }
 
