@@ -40,8 +40,8 @@ export class SettingHtml extends ServerlessAssistant {
                           }
                           
                           .coluna {
-                            flex: 25%;
-                            max-width: 25%;
+                            flex: 30%;
+                            max-width: 30%;
                             padding: 0 4px;
                           }
 
@@ -99,10 +99,10 @@ export class SettingHtml extends ServerlessAssistant {
                     <div class="container">
                         <div class="linha">
                             <div class="coluna">
-                                <img style="margin-top:30px; margin-left: 140px;" src="${logoSrc}" width="150">
+                                <img style="margin-top:30px; margin-left: 10%;" src="${logoSrc}" width="150">
 
 
-                                <div style="margin-left: 140px;border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 60px; width: 200px;">
+                                <div style="margin-left: 10%;border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 60px; width: 200px;">
                                     <div style="padding-top: 20px; margin-bottom: 20px;">
                                         AWS Region
                                         <br><br>
@@ -116,35 +116,26 @@ export class SettingHtml extends ServerlessAssistant {
                             </div>
                             <div class="coluna">
 
-                                <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 350px;">
+                                <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 250px;">
                                     <div style="padding-top: 20px; margin-bottom: 20px;">
-
-                                        <table style="">
-                                            <tr>
-                                                <td>Lambda Prefix Name</td>
-                                                <td><input type="text" id="prefix" size="20" value="${this.workspaceService.getPrefix()}"></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Log Time</td>
-                                                <td><input type="text" id="logTime" value="${this.workspaceService.getLogTime()}"></td>
-                                            </tr>                            
-                                            <tr>
-                                                <td>Terminal Type</td>
-                                                <td>
-                                                    <select name="terminalMode" id="terminalMode" onchange="changeTerminalMode(this)">
-                                                        <option value="windowsCmd" ${this.workspaceService.getTerminalMode() === 'windowsCmd' ? 'selected' : ''}>Windows Cmd</option>
-                                                        <option value="shell" ${this.workspaceService.getTerminalMode() === 'shell' ? 'selected' : ''}>Shell</option>
-                                                    </select>
-                                                </td>
-                                            </tr>                            
-                                        </table>
-                                        <br>
+                                        Lambda Prefix Name:<br>
+                                        <input type="text" id="prefix" size="20" value="${this.workspaceService.getPrefix()}">
+                                        <br><br>
+                                        Log Time<br>
+                                        <input type="text" id="logTime" value="${this.workspaceService.getLogTime()}">
+                                        <br><br>
+                                        Terminal Type<br>
+                                        <select name="terminalMode" id="terminalMode" onchange="changeTerminalMode(this)">
+                                            <option value="windowsCmd" ${this.workspaceService.getTerminalMode() === 'windowsCmd' ? 'selected' : ''}>Windows Cmd</option>
+                                            <option value="shell" ${this.workspaceService.getTerminalMode() === 'shell' ? 'selected' : ''}>Shell</option>
+                                        </select>
+                                        <br><br><br>
                                         <button style="width: 150px;height:30px;" class="form-button" onclick="save()">Save</button>
                                     </div>
                                 </div>
 
 
-                                <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 50px; width: 350px;">
+                                <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 50px; width: 250px;">
                                 <div style="padding-top: 20px; margin-bottom: 20px;">
                                 <table>
                                     <tr>
@@ -169,7 +160,7 @@ export class SettingHtml extends ServerlessAssistant {
                         <div class="coluna">
 
 
-                        <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 350px;">
+                        <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 300px;">
                             <div style="padding-top: 20px; margin-bottom: 20px;">
                                 AWS Cli Command:
                                 <br>
@@ -187,7 +178,7 @@ export class SettingHtml extends ServerlessAssistant {
 
 
 
-                        <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 350px;">
+                        <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 300px;">
                             <div style="padding-top: 20px; margin-bottom: 20px;">
                                 AWS Profile List
                                 <br>
@@ -280,7 +271,8 @@ export class SettingHtml extends ServerlessAssistant {
                           }
                           
                           .coluna {
-                            flex: 25%;
+                            flex: 50%;
+                            max-width: 50%;
                             padding: 0 4px;
                           }
 
@@ -297,16 +289,15 @@ export class SettingHtml extends ServerlessAssistant {
                         vscode.postMessage({ command: 'start', prefix, awsProfile, awsRegion });
                     }
                 </script>
-                    <center><h1>Welcome to Serverless Assistant Extension</h1></center>
                         <div class="container">
                             <div class="linha">
                                 <div class="coluna" style="max-width: 25%">
-                                    <img style="margin-top:30px; margin-left: 140px;" src="${logoSrc}" width="150">
+                                    <center><img style="margin-top:35%;" src="${logoSrc}" width="150"></center>
                                 </div>
                                 <div class="coluna">
-
+                                    <center><h1>Welcome to Serverless Assistant Extension</h1>
                                     <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 500px;">
-                                    <center>
+                                    
                                         <br>
                                         <div style="margin-left: 30px; margin-right: 30px;">This extension searches lambdas and filter using your project/workspace prefix name. If you do not have a prefix use an empty string to load all lambdas.</div>
 
