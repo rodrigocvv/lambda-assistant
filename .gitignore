@@ -4,3 +4,4 @@ out/
 dist/
 .vscode/
 .vscode/launch.json
+.vscode-test

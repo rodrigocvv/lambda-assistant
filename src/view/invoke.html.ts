@@ -1,12 +1,12 @@
 import { InvokeData, LambdaData } from '../interfaces/lambda-data.interface';
-import { ServerlessAssistant } from '../serverless-assistant';
+import { ServerlessAssistant } from '../commons/serverless-assistant';
 import { WorkspaceService } from '../services/worskpace.service';
 
 export class InvokeHtml extends ServerlessAssistant {
 
     workspaceService: WorkspaceService;
 
-    constructor(){
+    constructor() {
         super();
         this.workspaceService = new WorkspaceService();
     }
@@ -116,7 +116,7 @@ export class InvokeHtml extends ServerlessAssistant {
                                 <div style="${this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? '' : 'display:none'}">
                                     ServerlessName:
                                     <br>
-                                    <span onclick="changeServerlessName()" style="color:red;${lambdaData.serverlessName  ? 'display:none' : ''}" >
+                                    <span onclick="changeServerlessName()" style="color:red;${lambdaData.serverlessName ? 'display:none' : ''}" >
                                         Not informed!
                                     </span>
                                     ${lambdaData.serverlessName ? lambdaData.serverlessName : ''}

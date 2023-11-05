@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { WorkspaceService } from './services/worskpace.service';
+import { WorkspaceService } from '../services/worskpace.service';
 export class Session {
 
     private static instance: Session;

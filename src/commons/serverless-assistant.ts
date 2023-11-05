@@ -1,4 +1,4 @@
-import { WorkspaceService } from "./services/worskpace.service";
+import { WorkspaceService } from "../services/worskpace.service";
 import { Session } from "./session";
 import * as vscode from 'vscode';
 

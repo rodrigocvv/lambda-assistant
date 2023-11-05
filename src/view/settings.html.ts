@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ServerlessAssistant } from "../serverless-assistant";
+import { ServerlessAssistant } from "../commons/serverless-assistant";
 import { WorkspaceService } from "../services/worskpace.service";
 
 export class SettingHtml extends ServerlessAssistant {

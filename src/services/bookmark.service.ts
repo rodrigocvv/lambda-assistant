@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { LambdaData } from '../interfaces/lambda-data.interface';
 import { LambdaProvider } from '../providers/lambda.provider';
-import { ServerlessAssistant } from '../serverless-assistant';
+import { ServerlessAssistant } from '../commons/serverless-assistant';
 import { WorkspaceService } from './worskpace.service';
 export class BookmarkService extends ServerlessAssistant {
 

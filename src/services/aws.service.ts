@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { FunctionConfiguration, GetFunctionCommand, GetFunctionCommandOutput, InvokeCommand, InvokeCommandInput, LambdaClient, ListFunctionsCommand, ListFunctionsRequest } from "@aws-sdk/client-lambda";
 import { fromIni } from "@aws-sdk/credential-providers";
 import { AwsCredentialIdentityProvider } from "@smithy/types";
 import * as vscode from 'vscode';
 import { LambdaData } from '../interfaces/lambda-data.interface';
-import { ServerlessAssistant } from "../serverless-assistant";
+import { ServerlessAssistant } from "../commons/serverless-assistant";
 import { WorkspaceService } from "./worskpace.service";
+import { Messages } from "../commons/messages";
 
 export class AwsService extends ServerlessAssistant {
 
@@ -26,7 +28,7 @@ export class AwsService extends ServerlessAssistant {
                 terminal.sendText(`${serverlessCliCommand} deploy function -f ${serverlessName} --verbose ${currentStage ? '--stage ' + currentStage : ''} --aws-profile ${this.workspaceService.getCurrentAwsProfile()} --region ${this.workspaceService.getCurrentAwsRegion()}`);
                 terminal.show();
             } else {
-                vscode.window.showErrorMessage("For this operation you need to add your function identifier defined in serverless yaml. Click to edit ServerlessName in Invoke Page.");
+                vscode.window.showErrorMessage(Messages.error.noServerlessFunctionNameDeploy);
             }
 
         });
@@ -51,21 +53,25 @@ export class AwsService extends ServerlessAssistant {
             const currentStage = this.workspaceService.getCurrentStage();
             const stageSupport = this.workspaceService.getStageSupport();
             const terminalMode = this.workspaceService.getTerminalMode();
-            data = data.replaceAll('\n', '');
-            data = data.replaceAll('\t', '');
+            data = this.cleanStringPayload(data);
             let cliCommand = `${serverlessCliCommand} invoke local -f ${lambdaData.serverlessName} ${stageSupport ? '--stage ' + currentStage : ''} --aws-profile ${this.workspaceService.getCurrentAwsProfile()} --region ${this.workspaceService.getCurrentAwsRegion()}`;
             cliCommand += terminalMode === 'windowsCmd' ? ` --data ${JSON.stringify(data)}` : ` --data '${data}'`;
             const terminal = vscode.window.createTerminal('Invoke: ' + lambdaData.functionName);
             terminal.sendText(cliCommand);
             terminal.show();
         } else {
-            vscode.window.showErrorMessage("For this operation you need to add your function identifier defined in serverless yaml.");
+            vscode.window.showErrorMessage(Messages.error.noServerlessFunctionName);
         }
     }
 
+    private cleanStringPayload(payloadString: string): string {
+        payloadString = payloadString.replaceAll('\n', '');
+        payloadString = payloadString.replaceAll('\t', '');
+        return payloadString;
+    }
+
     public async invokeLambdaAws(lambdaName: string, data: string): Promise<any> {
-        data = data.replaceAll('\n', '');
-        data = data.replaceAll('\t', '');
+        data = this.cleanStringPayload(data);
         const input: InvokeCommandInput = {
             FunctionName: lambdaName,
             InvocationType: "RequestResponse",
@@ -82,9 +88,9 @@ export class AwsService extends ServerlessAssistant {
         const awsProfile = this.workspaceService.getCurrentAwsProfile();
         const credentials: AwsCredentialIdentityProvider = fromIni({ profile: awsProfile });
         const provider = await credentials();
-        if (!provider){
-            vscode.window.showErrorMessage('Error trying to use credentials from profile: ' + awsProfile);
-            throw new Error('Invalid Credentials!');
+        if (!provider) {
+            vscode.window.showErrorMessage(Messages.error.badCredentials + awsProfile);
+            throw new Error(Messages.error.invalidCredentials);
         }
         return { region: awsRegion, credentials: credentials };
 
@@ -103,13 +109,11 @@ export class AwsService extends ServerlessAssistant {
         const client = new LambdaClient(await this.getAwsConfig());
         let command = new ListFunctionsCommand(input);
         let response: any = await client.send(command);
-        // console.log('response => '+ JSON.stringify(response, undefined, 2));
         response.Functions?.forEach((lambda: FunctionConfiguration) => { lambdaList.push(this.parseLambda(lambda, undefined)); });
         while (response.NextMarker) {
             input = { Marker: response.NextMarker, MaxItems: 50 };
             command = new ListFunctionsCommand(input);
             response = await client.send(command);
-            // console.log('Response => ' + JSON.stringify(response, undefined, 2));
             response.Functions?.forEach((lambda: FunctionConfiguration) => { lambdaList.push(this.parseLambda(lambda, undefined)); });
         }
         return lambdaList;

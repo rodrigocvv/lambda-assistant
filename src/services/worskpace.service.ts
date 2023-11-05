@@ -3,8 +3,8 @@ import { load } from "js-yaml";
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { AwsData, InvokeData, LambdaData } from '../interfaces/lambda-data.interface';
-import { ServerlessAssistant } from "../serverless-assistant";
-import { Session } from "../session";
+import { ServerlessAssistant } from "../commons/serverless-assistant";
+import { Session } from "../commons/session";
 
 export class WorkspaceService extends ServerlessAssistant {
 

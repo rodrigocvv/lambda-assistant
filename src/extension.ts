@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { AwsService } from './services/aws.service';
 import { BookmarkService } from './services/bookmark.service';
 import { LambdaService } from './services/lambda.service';
-import { Session } from './session';
+import { Session } from './commons/session';
 import { DetailsView } from './view/details.view';
 import { InvokeView } from './view/invoke.view';
 import { SettingsView } from './view/settings.view';
@@ -17,7 +17,6 @@ async function addViews(): Promise<void> {
 	const lambdaService = new LambdaService();
 	const settingsView = new SettingsView();
 	const detailsView = new DetailsView();
-
 	const invokeView = new InvokeView();
 	const bookmarkService = new BookmarkService();
 	const awsService = new AwsService();

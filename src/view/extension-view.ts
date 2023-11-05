@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ServerlessAssistant } from '../serverless-assistant';
+import { ServerlessAssistant } from '../commons/serverless-assistant';
 export class ExtensionView extends ServerlessAssistant {
 
     iconPath;
