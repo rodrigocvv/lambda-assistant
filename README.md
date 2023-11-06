@@ -1,74 +1,36 @@
 ## Serverless Assistant extension
 
-This extesion help you to invokes, watch logs and deploy your lambdas.
+This extesion helps you to invoke, watch logs and deploy your lambdas.
 
-### Install
-![Install](docs/install.gif "Initial Settings")
-
-## Features
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+![Demo](docs/demo.gif "Demo")
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+You must have aws credentials configured in your operating system with right permissions to access and deploy your lambdas. You also should have serverless cli and aws cli v2.
+
+### Install
+
+This extension search for lambdas in your account and filter considering you have a prefix name for your workspace. If you don´t have prefix keep field empty to retrieve all lambdas. You should also inform your profile name and aws region. 
+![Install](docs/install.gif "Initial Settings")
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+### Deploy and Invoke Local
 
-For example:
+To deploy and invoke local you need to add manually the name defined in functions section of you serverless yaml file. 
 
-This extension contributes the following settings:
+![Deploy and Invoke Local](docs/serverlessName.gif "Deploy and Invoke Local")
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
 
-## Known Issues
+### Stage Support
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+To use this feature you should follow namming pattern in this way: {prefix}-{stage}-lambdaName.
 
-## Release Notes
+![Stage Support](docs/stagingSupport.gif "Stage Support")
 
-Users appreciate release notes as you update your extension.
+### Change Profile
 
-### 1.0.0
+At settings pages you can add or remove profiles. It must match with your aws credentials files. We save your invoke payload historic based on your profile, so if you want keep data update profile name instead of remove and add a new one. 
 
-Initial release of ...
+![Change Profile](docs/changeProfile.gif "Change Profile")
 
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
