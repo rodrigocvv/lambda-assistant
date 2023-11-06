@@ -44,13 +44,10 @@ export class DetailsHtml {
                         vscode.postMessage({ command: 'refresh' });
                     }
                 </script>
-    
                     <center>
                     <div class="container">
                         <div class="linha">
                             <div class="coluna" style="width: 450px;">
-
-
                                 <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 90px; width: 400px;">
                                     <br>
                                     <h1>${lambdaData.functionName}</h1>
@@ -64,7 +61,6 @@ export class DetailsHtml {
                                     <button class="form-button" style="width: 170px; height: 40px;" onclick="refresh()">Refresh</button>
                                     <br><br><br>
                                 </div>
-
                             </div>
                             <div class="coluna" style="width: 550px;">
                                 ${this.getTagsHtmlTable(lambdaData.tags)}
@@ -72,8 +68,6 @@ export class DetailsHtml {
                         </div>
                     </div>
                     </center>
-                        
-
                 </BODY>
                 <script>
                     checkStage();
@@ -129,6 +123,5 @@ export class DetailsHtml {
         </HTML>
         `;
     }
-
 
 }

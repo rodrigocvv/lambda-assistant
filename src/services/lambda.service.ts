@@ -4,6 +4,7 @@ import { LambdaProvider } from '../providers/lambda.provider';
 import { ServerlessAssistant } from "../commons/serverless-assistant";
 import { AwsService } from "./aws.service";
 import { WorkspaceService } from "./worskpace.service";
+import { Messages } from '../commons/messages';
 
 export class LambdaService extends ServerlessAssistant {
 
@@ -45,7 +46,7 @@ export class LambdaService extends ServerlessAssistant {
     public async registerChangeStageCommand(viewId: string): Promise<void> {
         let changeStageButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             const stageList: string[] = this.getContext().workspaceState.get('stageList') || [];
-            const stage = await vscode.window.showQuickPick(stageList, { canPickMany: false, title: "Select your stage:" });
+            const stage = await vscode.window.showQuickPick(stageList, { canPickMany: false, title: Messages.label.selectStage });
             this.getContext().workspaceState.update('currentStage', stage);
             this.lambdaProvider?.refresh(this.getLambdaList());
         });
@@ -55,7 +56,7 @@ export class LambdaService extends ServerlessAssistant {
     public async registerChangeProfileCommand(viewId: string): Promise<void> {
         let changeProfileButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             const awsProfileList = this.workspaceService.getAwsProfileList();
-            const currentAwsProfile = await vscode.window.showQuickPick(awsProfileList, { canPickMany: false, title: "Select your aws profile:" });
+            const currentAwsProfile = await vscode.window.showQuickPick(awsProfileList, { canPickMany: false, title: Messages.label.selectAwsProfile });
             if (currentAwsProfile){
                 this.workspaceService.setCurrentAwsProfile(currentAwsProfile);
                 this.lambdaProvider?.refresh(this.getLambdaList());
@@ -76,10 +77,9 @@ export class LambdaService extends ServerlessAssistant {
     }
 
     public async refreshData(): Promise<void> {
-        console.log('refreshing data!');
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: "Retrieving data from aws",
+            title: Messages.label.awsGettingData,
             cancellable: true
         }, async () => {
             let awsLambdaList = await this.awsService.getAllLambdaList();

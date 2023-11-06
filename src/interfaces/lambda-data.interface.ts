@@ -20,5 +20,4 @@ export interface InvokeData {
 export interface AwsData {
     profileName: string;
     lambdaList?: LambdaData[];
-    // active: boolean;
 }

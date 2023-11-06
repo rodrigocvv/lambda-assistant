@@ -43,5 +43,4 @@ export class BookmarkService extends ServerlessAssistant {
         this.getContext().subscriptions.push(bookmarNewInvokeCommand);
     }
 
-
 }

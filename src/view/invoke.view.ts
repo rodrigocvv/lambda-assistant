@@ -4,6 +4,7 @@ import { AwsService } from '../services/aws.service';
 import { WorkspaceService } from '../services/worskpace.service';
 import { ExtensionView } from './extension-view';
 import { InvokeHtml } from './invoke.html';
+import { Messages } from '../commons/messages';
 
 export class InvokeView extends ExtensionView {
 
@@ -50,7 +51,6 @@ export class InvokeView extends ExtensionView {
 
         this.panel.iconPath = this.iconPath;
         this.panel.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
-
         this.panel.webview.onDidReceiveMessage(
             message => {
                 switch (message.command) {
@@ -100,7 +100,7 @@ export class InvokeView extends ExtensionView {
     }
 
     private async editServerlessName(lambdaData: LambdaData): Promise<void> {
-        const serverlessName = await vscode.window.showInputBox({ title: "Add identifier name to " + lambdaData.functionName + " defined in you serverless.yml file under functions section: " });
+        const serverlessName = await vscode.window.showInputBox({ title: Messages.label.addServerlessName1 + lambdaData.functionName + Messages.label.addServerlessName2 });
         if (serverlessName) {
             this.workspaceService.setServerlessName(lambdaData.functionName, serverlessName);
             vscode.commands.executeCommand('lambdasView.updateView');
@@ -116,7 +116,7 @@ export class InvokeView extends ExtensionView {
         } catch (e: any) {
             console.error(e);
             this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
-            vscode.window.showErrorMessage('Error invoking lambda from aws.');
+            vscode.window.showErrorMessage(Messages.error.errorInvokeLambdaAws);
         }
     }
 

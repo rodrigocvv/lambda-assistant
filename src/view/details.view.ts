@@ -37,7 +37,6 @@ export class DetailsView extends ExtensionView {
         this.panel = vscode.window.createWebviewPanel('lambdaDetails', lambdaData.functionName, vscode.ViewColumn.One,
             { enableScripts: true });
 
-        // this.panel.webview.html = this.detailsHtml.getWebViewHtml(lambdaData);
         this.panel.webview.html = this.detailsHtml.getLoader();
         this.panel.iconPath = this.iconPath;
         this.refreshLambdaDataFromAws(lambdaData);

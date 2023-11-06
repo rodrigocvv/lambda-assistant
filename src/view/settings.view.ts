@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { Messages } from '../commons/messages';
 import { WorkspaceService } from '../services/worskpace.service';
 import { ExtensionView } from './extension-view';
 import { SettingHtml } from './settings.html';
@@ -31,14 +32,10 @@ export class SettingsView extends ExtensionView {
     }
 
     private createPanel() {
-        this.panel = vscode.window.createWebviewPanel('settings', 'Workspace Settings', vscode.ViewColumn.One,
+        this.panel = vscode.window.createWebviewPanel('settings', Messages.label.worksspaceSettings, vscode.ViewColumn.One,
             { enableScripts: true, retainContextWhenHidden: true });
         this.logoScr = this.panel?.webview.asWebviewUri(this.iconPath);
-
-
         this.panel.webview.html = this.workspaceService.isExtensionConfigured() ? this.settingsHtml.getWebContentSettings(this.logoScr!) : this.settingsHtml.getWebContentWelcome(this.logoScr!);
-
-
         this.panel.iconPath = this.iconPath;
         this.panel.webview.onDidReceiveMessage(
             message => {

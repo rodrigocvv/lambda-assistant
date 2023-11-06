@@ -5,15 +5,18 @@ import * as vscode from 'vscode';
 import { AwsData, InvokeData, LambdaData } from '../interfaces/lambda-data.interface';
 import { ServerlessAssistant } from "../commons/serverless-assistant";
 import { Session } from "../commons/session";
+import { Messages } from '../commons/messages';
 
 export class WorkspaceService extends ServerlessAssistant {
 
     public getLambdaList(): LambdaData[] | undefined {
+        return this.getAwsData()?.lambdaList;
+    }
+
+    private getAwsData(): AwsData | undefined {
         const currentAwsProfile = this.getContext().workspaceState.get('currentAwsProfile');
         const workspaceData = this.getContext().workspaceState.get('workspaceData') as AwsData[];
-        // console.log('workspaceData => '+ JSON.stringify(workspaceData, undefined, 2));
-        const awsData = workspaceData?.find(obj => obj.profileName === currentAwsProfile);
-        return awsData?.lambdaList;
+        return workspaceData?.find(obj => obj.profileName === currentAwsProfile);
     }
 
     public getLambdaByName(lambdaName: string): LambdaData | undefined {
@@ -34,7 +37,6 @@ export class WorkspaceService extends ServerlessAssistant {
             };
         }
         workspaceData = workspaceData ? workspaceData : [awsData];
-        // console.log('workspaceData => ' + JSON.stringify(workspaceData, undefined, 2));
         this.getContext().workspaceState.update('workspaceData', workspaceData);
     }
 
@@ -142,7 +144,6 @@ export class WorkspaceService extends ServerlessAssistant {
         return prefix || '';
     }
 
-
     public getPrefixWithStage() {
         let prefix = this.getContext().workspaceState.get('prefixName') as string;
         const stageSupport = this.getContext().workspaceState.get('stageSupport') || false;
@@ -184,7 +185,7 @@ export class WorkspaceService extends ServerlessAssistant {
             }
             this.getContext().workspaceState.update('workspaceData', workspaceData);
         } else if (existingProfileList) {
-            vscode.window.showErrorMessage(newProfileName + ' already exists.');
+            vscode.window.showErrorMessage(newProfileName + Messages.error.existingData);
         }
     }
 
@@ -223,9 +224,6 @@ export class WorkspaceService extends ServerlessAssistant {
         } else {
             lambdaLocal!.invokeData = [invokeData];
         }
-        // console.log('lambdaLocal => ' + JSON.stringify(lambdaLocal, undefined, 2));
-        // console.log('localLambdaList => ' + JSON.stringify(localLambdaList, undefined, 2));
-        // awsData.lambdaList = localLambdaList;
 
         this.getContext().workspaceState.update('workspaceData', workspaceData);
 

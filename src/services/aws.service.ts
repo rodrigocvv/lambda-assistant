@@ -3,10 +3,10 @@ import { FunctionConfiguration, GetFunctionCommand, GetFunctionCommandOutput, In
 import { fromIni } from "@aws-sdk/credential-providers";
 import { AwsCredentialIdentityProvider } from "@smithy/types";
 import * as vscode from 'vscode';
-import { LambdaData } from '../interfaces/lambda-data.interface';
-import { ServerlessAssistant } from "../commons/serverless-assistant";
-import { WorkspaceService } from "./worskpace.service";
 import { Messages } from "../commons/messages";
+import { ServerlessAssistant } from "../commons/serverless-assistant";
+import { LambdaData } from '../interfaces/lambda-data.interface';
+import { WorkspaceService } from "./worskpace.service";
 
 export class AwsService extends ServerlessAssistant {
 
@@ -30,7 +30,6 @@ export class AwsService extends ServerlessAssistant {
             } else {
                 vscode.window.showErrorMessage(Messages.error.noServerlessFunctionNameDeploy);
             }
-
         });
         this.getContext().subscriptions.push(deployButtonDisposable);
     }
@@ -93,7 +92,6 @@ export class AwsService extends ServerlessAssistant {
             throw new Error(Messages.error.invalidCredentials);
         }
         return { region: awsRegion, credentials: credentials };
-
     }
 
     public async getLambdaDataByName(lambdaName: string): Promise<LambdaData> {

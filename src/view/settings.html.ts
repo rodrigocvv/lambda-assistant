@@ -63,7 +63,6 @@ export class SettingHtml extends ServerlessAssistant {
                     function changeTerminalMode(terminalMode) {
                         vscode.postMessage({ command: 'changeTerminalMode', terminalMode: terminalMode.value });
                     }                     
-                    
                     function removeProfile(profile) {
                         vscode.postMessage({ command: 'removeProfile', profileName: profile });
                     }                                                    
@@ -90,18 +89,12 @@ export class SettingHtml extends ServerlessAssistant {
                         vscode.postMessage({ command: 'updateCliCommands', awsCliCommand, serverlessCliCommand });
                     }
                 </script>
-    
                     <center><h1>Workspace Settings</h1></center>
-
                     <center>
-                    
-
                     <div class="container">
                         <div class="linha">
                             <div class="coluna">
                                 <img style="margin-top:30px; margin-left: 10%;" src="${logoSrc}" width="150">
-
-
                                 <div style="margin-left: 10%;border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 60px; width: 200px;">
                                     <div style="padding-top: 20px; margin-bottom: 20px;">
                                         AWS Region
@@ -111,11 +104,8 @@ export class SettingHtml extends ServerlessAssistant {
                                         <button style="width: 150px;height:30px;" class="form-button" onclick="changeRegion()">Change Region</button>
                                     </div>
                                 </div>
-    
-
                             </div>
                             <div class="coluna">
-
                                 <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 250px;">
                                     <div style="padding-top: 20px; margin-bottom: 20px;">
                                         Lambda Prefix Name:<br>
@@ -133,8 +123,6 @@ export class SettingHtml extends ServerlessAssistant {
                                         <button style="width: 150px;height:30px;" class="form-button" onclick="save()">Save</button>
                                     </div>
                                 </div>
-
-
                                 <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 50px; width: 250px;">
                                 <div style="padding-top: 20px; margin-bottom: 20px;">
                                 <table>
@@ -153,13 +141,8 @@ export class SettingHtml extends ServerlessAssistant {
                                 </div>
                             </div>
 
-        
-
-
                         </div>
                         <div class="coluna">
-
-
                         <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 300px;">
                             <div style="padding-top: 20px; margin-bottom: 20px;">
                                 AWS Cli Command:
@@ -175,9 +158,6 @@ export class SettingHtml extends ServerlessAssistant {
                                 <button style="width: 150px;height:30px;" class="form-button" onclick="updateCliCommands()">Update</button>
                             </div>
                         </div>
-
-
-
                         <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 300px;">
                             <div style="padding-top: 20px; margin-bottom: 20px;">
                                 AWS Profile List
@@ -192,28 +172,15 @@ export class SettingHtml extends ServerlessAssistant {
                                 </table>
                             </div>
                         </div>
-
-
-
-
                         </div> <!-- coluna -->
                     </div> <!-- linha -->
                 </div> <!-- container -->
-
-
-
-
-
-                        <br>
-                        
-                        
-                    </center>
-                </BODY>
-            </HTML>
+                <br>
+                </center>
+            </BODY>
+        </HTML>
         `;
     }
-
-
 
     private getStageListHtml(stageList: string[] | undefined): string {
         let html = '';
@@ -240,7 +207,6 @@ export class SettingHtml extends ServerlessAssistant {
         });
         return html;
     }
-
 
     public getWebContentWelcome(logoSrc: vscode.Uri) {
         return `
@@ -297,12 +263,9 @@ export class SettingHtml extends ServerlessAssistant {
                                 <div class="coluna">
                                     <center><h1>Welcome to Serverless Assistant Extension</h1>
                                     <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 30px; width: 500px;">
-                                    
                                         <br>
                                         <div style="margin-left: 30px; margin-right: 30px;">This extension searches lambdas and filter using your project/workspace prefix name. If you do not have a prefix use an empty string to load all lambdas.</div>
-
                                         <br><br>
-
                                         <table>
                                             <tr>
                                                 <td>
@@ -329,8 +292,6 @@ export class SettingHtml extends ServerlessAssistant {
                                                 </td>
                                             </tr>
                                         </table>
-
-                                        
                                         <br><br>
                                         <button style="width: 150px;height:30px;" class="form-button" onclick="start()">Start</button>
                                         <br>
@@ -338,7 +299,6 @@ export class SettingHtml extends ServerlessAssistant {
                                         <br>
                                         </center>
                                     </div>
-
                                 </div> <!-- coluna -->
                             </div> <!-- linha -->
                         </div> <!-- container -->
@@ -347,7 +307,6 @@ export class SettingHtml extends ServerlessAssistant {
             </HTML>
         `;
     }
-
 
     public getWebContentLoading(): string {
         return `
@@ -362,7 +321,6 @@ export class SettingHtml extends ServerlessAssistant {
                         height: 120px;
                         animation: spin 2s linear infinite;
                     }
-                    
                     @keyframes spin {
                         0% { transform: rotate(0deg); }
                         100% { transform: rotate(360deg); }
@@ -378,6 +336,5 @@ export class SettingHtml extends ServerlessAssistant {
         </HTML>
         `;
     }
-
 
 }
