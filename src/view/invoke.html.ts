@@ -1,9 +1,8 @@
-import { InvokeData, LambdaData } from '../interfaces/lambda-data.interface';
 import { ServerlessAssistant } from '../commons/serverless-assistant';
+import { InvokeData, LambdaData } from '../interfaces/lambda-data.interface';
 import { WorkspaceService } from '../services/worskpace.service';
 
 export class InvokeHtml extends ServerlessAssistant {
-
     workspaceService: WorkspaceService;
 
     constructor() {
@@ -107,10 +106,14 @@ export class InvokeHtml extends ServerlessAssistant {
                                     <br>
                                     <h2>${lambdaData.functionName}</h2>
                                     <br><br>
-                                    <div style="${this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? '' : 'display:none'}">
+                                    <div style="${
+                                        this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? '' : 'display:none'
+                                    }">
                                         ServerlessName:
                                         <br>
-                                        <span onclick="changeServerlessName()" style="color:red;${lambdaData.serverlessName ? 'display:none' : ''}" >
+                                        <span onclick="changeServerlessName()" style="color:red;${
+                                            lambdaData.serverlessName ? 'display:none' : ''
+                                        }" >
                                             Not informed!
                                         </span>
                                         ${lambdaData.serverlessName ? lambdaData.serverlessName : ''}
@@ -118,8 +121,12 @@ export class InvokeHtml extends ServerlessAssistant {
                                         <button onclick="editServerlessName()">Edit</button>
                                     </div>
                                     <br><br><br>
-                                    <button class="form-button" style="margin-left: 10px;width: 200px;height: 25px;${!lambdaData.bookmark ? '' : 'display:none'}" onclick="addBookmark()">Add to bookmark</button>
-                                    <button class="form-button" style="margin-left: 10px;width: 200px;height: 25px;${lambdaData.bookmark === true ? '' : 'display:none'}" onclick="removeBookmark()">Remove from bookmark</button>
+                                    <button class="form-button" style="margin-left: 10px;width: 200px;height: 25px;${
+                                        !lambdaData.bookmark ? '' : 'display:none'
+                                    }" onclick="addBookmark()">Add to bookmark</button>
+                                    <button class="form-button" style="margin-left: 10px;width: 200px;height: 25px;${
+                                        lambdaData.bookmark === true ? '' : 'display:none'
+                                    }" onclick="removeBookmark()">Remove from bookmark</button>
                                     <br><br>
                                 </div>
                             </div>
@@ -140,17 +147,25 @@ export class InvokeHtml extends ServerlessAssistant {
                                     <select name="invokeName" id="invokeName" onchange="changeName(this)">
                                         <option value="request1" ${this.selectedData === 'request1' ? 'selected' : ''}>request1</option>
                                         <option value="request2" ${this.selectedData === 'request2' ? 'selected' : ''}>request2</option>
-                                        <option value="request3" ${this.selectedData === 'request3' ? 'selected' : ''}>request3</option>                        
+                                        <option value="request3" ${
+                                            this.selectedData === 'request3' ? 'selected' : ''
+                                        }>request3</option>                        
                                     </select>
                                     <button onclick="format()" style="margin-left:320px;">Format JSON</button>
                                     <br>
-                                    <textarea id="invokeData" rows="20" cols="70">${this.getSelectedData(lambdaData) || this.getDefaultData()}</textarea>                                
+                                    <textarea id="invokeData" rows="20" cols="70">${
+                                        this.getSelectedData(lambdaData) || this.getDefaultData()
+                                    }</textarea>                                
                                     <br><br>
-                                    <div style="${this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? '' : 'display:none'}">
+                                    <div style="${
+                                        this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? '' : 'display:none'
+                                    }">
                                         <button style="margin-left:0px; width: 170px; height: 40px;" class="form-button" onclick="invokeLocal()">Invoke Local</button>
                                         <button style="margin-left:200px;; width: 170px; height: 40px;" class="form-button" onclick="invokeAws()">Invoke AWS</button>
                                     </div>
-                                    <div style="${this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? 'display:none' : ''}">
+                                    <div style="${
+                                        this.workspaceService.isLambdaFromWorkspace(lambdaData.functionName) ? 'display:none' : ''
+                                    }">
                                         <button style="width: 170px; height: 40px;" class="form-button" onclick="invokeAws()">Invoke AWS</button>
                                     </div>
                                 </div>
@@ -165,7 +180,13 @@ export class InvokeHtml extends ServerlessAssistant {
 
     private getSelectedData(lambdaData: LambdaData) {
         let invokeContent: InvokeData | undefined;
-        if (this.selectedData && lambdaData.invokeData && lambdaData.invokeData.length > 0 && lambdaData.invokeData && Array.isArray(lambdaData.invokeData)) {
+        if (
+            this.selectedData &&
+            lambdaData.invokeData &&
+            lambdaData.invokeData.length > 0 &&
+            lambdaData.invokeData &&
+            Array.isArray(lambdaData.invokeData)
+        ) {
             invokeContent = lambdaData.invokeData.find((obj) => obj.name === this.selectedData);
         }
         return invokeContent?.data;
@@ -174,14 +195,13 @@ export class InvokeHtml extends ServerlessAssistant {
     private getDefaultData() {
         const dataContent = {
             queryStringParameters: {
-                queryParameterName: "test1"
+                queryParameterName: 'test1',
             },
             pathParameters: {
-                pathParameterName: "test2"
+                pathParameterName: 'test2',
             },
-            body: "{ \"data\": \"test3\"}"
+            body: '{ "data": "test3"}',
         };
         return JSON.stringify(dataContent, undefined, 2);
     }
-
 }

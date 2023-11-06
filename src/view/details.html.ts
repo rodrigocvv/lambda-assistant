@@ -1,4 +1,4 @@
-import { LambdaData } from "../interfaces/lambda-data.interface";
+import { LambdaData } from '../interfaces/lambda-data.interface';
 
 export class DetailsHtml {
     public getWebViewHtml(lambdaData: LambdaData) {
@@ -77,14 +77,14 @@ export class DetailsHtml {
     }
 
     private getTagsHtmlTable(tags: any): string {
-        let html ='';
-        if (tags){
+        let html = '';
+        if (tags) {
             html = `
                 <div style="border:1px solid;border-radius: 10px;border-spacing: 20px;margin-top: 90px; width: 500px;">
                     <h4>Tags</h4>
                     <table style="margin-left:20px; margin-right: 20px; margin-bottom:30px;">            
             `;
-            for (const [key, value] of Object.entries(tags)) { 
+            for (const [key, value] of Object.entries(tags)) {
                 html += `<tr><td>${key}</td><td>${value}</td>
                 </tr>
                 `;
@@ -123,5 +123,4 @@ export class DetailsHtml {
         </HTML>
         `;
     }
-
 }

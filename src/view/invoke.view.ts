@@ -1,13 +1,12 @@
 import * as vscode from 'vscode';
+import { Messages } from '../commons/messages';
 import { LambdaData } from '../interfaces/lambda-data.interface';
 import { AwsService } from '../services/aws.service';
 import { WorkspaceService } from '../services/worskpace.service';
 import { ExtensionView } from './extension-view';
 import { InvokeHtml } from './invoke.html';
-import { Messages } from '../commons/messages';
 
 export class InvokeView extends ExtensionView {
-
     invokeHtml: InvokeHtml;
     workspaceService: WorkspaceService;
     awsService: AwsService;
@@ -43,16 +42,20 @@ export class InvokeView extends ExtensionView {
     }
 
     private createPanel(lambdaData: LambdaData) {
-        this.panel = vscode.window.createWebviewPanel('Invoke' + lambdaData.functionName, 'Invoke ' + lambdaData.functionName, vscode.ViewColumn.One,
+        this.panel = vscode.window.createWebviewPanel(
+            'Invoke' + lambdaData.functionName,
+            'Invoke ' + lambdaData.functionName,
+            vscode.ViewColumn.One,
             {
                 enableScripts: true,
-                retainContextWhenHidden: true
-            });
+                retainContextWhenHidden: true,
+            },
+        );
 
         this.panel.iconPath = this.iconPath;
         this.panel.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
         this.panel.webview.onDidReceiveMessage(
-            message => {
+            (message) => {
                 switch (message.command) {
                     case 'refresh':
                         this.panel!.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
@@ -87,7 +90,7 @@ export class InvokeView extends ExtensionView {
                 }
             },
             undefined,
-            undefined
+            undefined,
         );
 
         this.panel.onDidDispose(
@@ -95,16 +98,22 @@ export class InvokeView extends ExtensionView {
                 this.panel = undefined;
             },
             null,
-            undefined
+            undefined,
         );
     }
 
     private async editServerlessName(lambdaData: LambdaData): Promise<void> {
-        const serverlessName = await vscode.window.showInputBox({ title: Messages.label.addServerlessName1 + lambdaData.functionName + Messages.label.addServerlessName2 });
+        const serverlessName = await vscode.window.showInputBox({
+            title: Messages.label.addServerlessName1 + lambdaData.functionName + Messages.label.addServerlessName2,
+        });
         if (serverlessName) {
             this.workspaceService.setServerlessName(lambdaData.functionName, serverlessName);
             vscode.commands.executeCommand('lambdasView.updateView');
-            this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(this.workspaceService.getLambdaByName(lambdaData.functionName)!, undefined, false);
+            this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(
+                this.workspaceService.getLambdaByName(lambdaData.functionName)!,
+                undefined,
+                false,
+            );
         }
     }
 
@@ -119,5 +128,4 @@ export class InvokeView extends ExtensionView {
             vscode.window.showErrorMessage(Messages.error.errorInvokeLambdaAws);
         }
     }
-
 }

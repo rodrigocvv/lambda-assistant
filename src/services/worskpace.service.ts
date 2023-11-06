@@ -1,14 +1,13 @@
 import * as fs from 'fs';
-import { load } from "js-yaml";
+import { load } from 'js-yaml';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { AwsData, InvokeData, LambdaData } from '../interfaces/lambda-data.interface';
-import { ServerlessAssistant } from "../commons/serverless-assistant";
-import { Session } from "../commons/session";
 import { Messages } from '../commons/messages';
+import { ServerlessAssistant } from '../commons/serverless-assistant';
+import { Session } from '../commons/session';
+import { AwsData, InvokeData, LambdaData } from '../interfaces/lambda-data.interface';
 
 export class WorkspaceService extends ServerlessAssistant {
-
     public getLambdaList(): LambdaData[] | undefined {
         return this.getAwsData()?.lambdaList;
     }
@@ -16,7 +15,7 @@ export class WorkspaceService extends ServerlessAssistant {
     private getAwsData(): AwsData | undefined {
         const currentAwsProfile = this.getContext().workspaceState.get('currentAwsProfile');
         const workspaceData = this.getContext().workspaceState.get('workspaceData') as AwsData[];
-        return workspaceData?.find(obj => obj.profileName === currentAwsProfile);
+        return workspaceData?.find((obj) => obj.profileName === currentAwsProfile);
     }
 
     public getLambdaByName(lambdaName: string): LambdaData | undefined {
@@ -27,13 +26,13 @@ export class WorkspaceService extends ServerlessAssistant {
     public saveLambdaList(lambdaList: LambdaData[]): void {
         const currentAwsProfile: string = this.getContext().workspaceState.get('currentAwsProfile') || 'default';
         let workspaceData: AwsData[] | undefined = this.getContext().workspaceState.get('workspaceData') as AwsData[];
-        let awsData = workspaceData?.find(obj => obj.profileName === currentAwsProfile);
+        let awsData = workspaceData?.find((obj) => obj.profileName === currentAwsProfile);
         if (awsData) {
             awsData.lambdaList = lambdaList;
         } else {
             awsData = {
                 profileName: currentAwsProfile,
-                lambdaList: lambdaList
+                lambdaList: lambdaList,
             };
         }
         workspaceData = workspaceData ? workspaceData : [awsData];
@@ -51,9 +50,9 @@ export class WorkspaceService extends ServerlessAssistant {
 
     public removeStage(stage: string): void {
         let stageList: string[] = this.getContext().workspaceState.get('stageList') || [];
-        stageList = stageList.filter(stageName => stageName !== stage);
+        stageList = stageList.filter((stageName) => stageName !== stage);
         this.getContext().workspaceState.update('stageList', stageList);
-    }    
+    }
 
     public addStage(stage: string): void {
         const stageList: string[] = this.getContext().workspaceState.get('stageList') || [];
@@ -98,11 +97,11 @@ export class WorkspaceService extends ServerlessAssistant {
         let workspaceData = this.getContext().workspaceState.get('workspaceData') as AwsData[];
         if (!workspaceData || workspaceData.length < 1) {
             const awsData: AwsData = {
-                profileName: newProfileName
+                profileName: newProfileName,
             };
             workspaceData = [awsData];
         } else {
-            workspaceData.forEach(awsData => {
+            workspaceData.forEach((awsData) => {
                 if (awsData.profileName === oldProfileName) {
                     awsData.profileName = newProfileName;
                 }
@@ -167,7 +166,7 @@ export class WorkspaceService extends ServerlessAssistant {
 
     public removeAwsProfile(profileName: string): void {
         let workspaceData = this.getContext().workspaceState.get('workspaceData') as AwsData[];
-        workspaceData = workspaceData.filter(item => item.profileName !== profileName);
+        workspaceData = workspaceData.filter((item) => item.profileName !== profileName);
         this.getContext().workspaceState.update('workspaceData', workspaceData);
     }
 
@@ -176,7 +175,7 @@ export class WorkspaceService extends ServerlessAssistant {
         const existingProfileList = workspaceData?.filter((awsProfile) => awsProfile.profileName === newProfileName);
         if (!existingProfileList || existingProfileList.length === 0) {
             const awsData: AwsData = {
-                profileName: newProfileName
+                profileName: newProfileName,
             };
             if (workspaceData) {
                 workspaceData.push(awsData);
@@ -190,7 +189,7 @@ export class WorkspaceService extends ServerlessAssistant {
     }
 
     public getAwsCliCommand(): string {
-        return this.getContext().workspaceState.get('awsCliCommand') as string || 'aws';
+        return (this.getContext().workspaceState.get('awsCliCommand') as string) || 'aws';
     }
 
     public setAwsCliCommand(awsCliCommand: string): void {
@@ -198,7 +197,7 @@ export class WorkspaceService extends ServerlessAssistant {
     }
 
     public getServerlessCliCommand(): string {
-        return this.getContext().workspaceState.get('awsServerlessCliCommand') as string || 'serverless';
+        return (this.getContext().workspaceState.get('awsServerlessCliCommand') as string) || 'serverless';
     }
 
     public setServerlessCliCommand(serverlessCliCommand: string): void {
@@ -208,14 +207,14 @@ export class WorkspaceService extends ServerlessAssistant {
     public saveInvokeData(lambdaName: string, invokeName: string, invokeContent: string): void {
         const currentAwsProfile: string = this.getContext().workspaceState.get('currentAwsProfile') || 'default';
         let workspaceData: AwsData[] | undefined = this.getContext().workspaceState.get('workspaceData') as AwsData[];
-        let awsData: AwsData = workspaceData!.find(obj => obj.profileName === currentAwsProfile) as AwsData;                
+        let awsData: AwsData = workspaceData!.find((obj) => obj.profileName === currentAwsProfile) as AwsData;
         const lambdaLocal = awsData.lambdaList!.find((lambda) => lambda.functionName === lambdaName)!;
         const invokeData: InvokeData = {
             data: invokeContent,
-            name: invokeName
+            name: invokeName,
         };
         if (lambdaLocal.invokeData) {
-            const oldData = lambdaLocal!.invokeData.find(obj => obj.name === invokeData.name);
+            const oldData = lambdaLocal!.invokeData.find((obj) => obj.name === invokeData.name);
             if (oldData) {
                 oldData.data = invokeContent;
             } else {
@@ -226,7 +225,6 @@ export class WorkspaceService extends ServerlessAssistant {
         }
 
         this.getContext().workspaceState.update('workspaceData', workspaceData);
-
     }
 
     public setBookmark(lambdaName: string, isBookmark: boolean): void {
@@ -244,18 +242,17 @@ export class WorkspaceService extends ServerlessAssistant {
     private updateLambda(lambda: LambdaData): void {
         const currentAwsProfile: string = this.getContext().workspaceState.get('currentAwsProfile') || 'default';
         let workspaceData: AwsData[] | undefined = this.getContext().workspaceState.get('workspaceData') as AwsData[];
-        let awsData: AwsData = workspaceData!.find(obj => obj.profileName === currentAwsProfile) as AwsData;                
+        let awsData: AwsData = workspaceData!.find((obj) => obj.profileName === currentAwsProfile) as AwsData;
         let oldlambda = awsData.lambdaList!.find((obj) => lambda.functionName === obj.functionName)!;
         oldlambda = lambda;
         this.getContext().workspaceState.update('workspaceData', workspaceData);
     }
 
-    public getTerminalMode(): string{
+    public getTerminalMode(): string {
         return this.getContext().workspaceState.get('terminalMode') || 'windowsCmd';
     }
 
     public setTerminalMode(terminalMode: string): void {
         this.getContext().workspaceState.update('terminalMode', terminalMode);
     }
-
 }

@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
+import { ServerlessAssistant } from '../commons/serverless-assistant';
 import { LambdaData } from '../interfaces/lambda-data.interface';
 import { LambdaProvider } from '../providers/lambda.provider';
-import { ServerlessAssistant } from '../commons/serverless-assistant';
 import { WorkspaceService } from './worskpace.service';
 export class BookmarkService extends ServerlessAssistant {
-
     lambdaProvider: LambdaProvider | undefined;
     workspaceService: WorkspaceService;
 
@@ -21,7 +20,7 @@ export class BookmarkService extends ServerlessAssistant {
     }
 
     private getBookmarkLambdaList(): LambdaData[] | undefined {
-        return this.workspaceService.getLambdaList()?.filter(obj => obj.bookmark && obj.isActive);
+        return this.workspaceService.getLambdaList()?.filter((obj) => obj.bookmark && obj.isActive);
     }
 
     public registerBookmarkRefreshCommand(viewId: string): void {
@@ -33,14 +32,13 @@ export class BookmarkService extends ServerlessAssistant {
 
     public registerBookmarkNewInvokeCommand(viewId: string): void {
         let bookmarNewInvokeCommand = vscode.commands.registerCommand(viewId, async () => {
-            const lambdaNameList = this.workspaceService.getLambdaList()?.map(obj => obj.functionName) || [];
-            const lambdaName = await vscode.window.showQuickPick(lambdaNameList, { canPickMany: false, title: "Select your lambda:" });
+            const lambdaNameList = this.workspaceService.getLambdaList()?.map((obj) => obj.functionName) || [];
+            const lambdaName = await vscode.window.showQuickPick(lambdaNameList, { canPickMany: false, title: 'Select your lambda:' });
             if (lambdaName) {
-                const lambdaData = this.workspaceService.getLambdaList()?.find(lambda => lambda.functionName === lambdaName);
+                const lambdaData = this.workspaceService.getLambdaList()?.find((lambda) => lambda.functionName === lambdaName);
                 vscode.commands.executeCommand('lambdaAssistant.openInvokeView', lambdaData);
             }
         });
         this.getContext().subscriptions.push(bookmarNewInvokeCommand);
     }
-
 }

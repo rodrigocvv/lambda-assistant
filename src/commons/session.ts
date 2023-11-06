@@ -1,12 +1,10 @@
 import * as vscode from 'vscode';
 export class Session {
-
     private static instance: Session;
 
     private static context: vscode.ExtensionContext | undefined;
 
-    private constructor() {
-    }
+    private constructor() {}
 
     public static getInstance(): Session {
         if (!Session.instance) {
@@ -22,5 +20,4 @@ export class Session {
     public setContext(context: vscode.ExtensionContext) {
         Session.context = context;
     }
-
 }

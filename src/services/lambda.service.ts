@@ -1,13 +1,12 @@
 import * as vscode from 'vscode';
+import { Messages } from '../commons/messages';
+import { ServerlessAssistant } from '../commons/serverless-assistant';
 import { LambdaData } from '../interfaces/lambda-data.interface';
 import { LambdaProvider } from '../providers/lambda.provider';
-import { ServerlessAssistant } from "../commons/serverless-assistant";
-import { AwsService } from "./aws.service";
-import { WorkspaceService } from "./worskpace.service";
-import { Messages } from '../commons/messages';
+import { AwsService } from './aws.service';
+import { WorkspaceService } from './worskpace.service';
 
 export class LambdaService extends ServerlessAssistant {
-
     lambdaProvider: LambdaProvider | undefined;
     workspaceService: WorkspaceService;
     awsService: AwsService;
@@ -56,8 +55,11 @@ export class LambdaService extends ServerlessAssistant {
     public async registerChangeProfileCommand(viewId: string): Promise<void> {
         let changeProfileButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             const awsProfileList = this.workspaceService.getAwsProfileList();
-            const currentAwsProfile = await vscode.window.showQuickPick(awsProfileList, { canPickMany: false, title: Messages.label.selectAwsProfile });
-            if (currentAwsProfile){
+            const currentAwsProfile = await vscode.window.showQuickPick(awsProfileList, {
+                canPickMany: false,
+                title: Messages.label.selectAwsProfile,
+            });
+            if (currentAwsProfile) {
                 this.workspaceService.setCurrentAwsProfile(currentAwsProfile);
                 this.lambdaProvider?.refresh(this.getLambdaList());
                 vscode.commands.executeCommand('invokeBookmarkView.refresh');
@@ -68,25 +70,28 @@ export class LambdaService extends ServerlessAssistant {
 
     public getLambdaList(): LambdaData[] | undefined {
         let lambdaList: LambdaData[] | undefined = this.workspaceService.getLambdaList();
-        let filteredList = lambdaList?.filter(obj => obj.isActive);
+        let filteredList = lambdaList?.filter((obj) => obj.isActive);
         const prefix = this.workspaceService.getPrefixWithStage();
-        if (prefix && prefix.length > 0){
-            filteredList = filteredList?.filter(obj => obj.functionName?.startsWith(this.workspaceService.getPrefixWithStage()));
+        if (prefix && prefix.length > 0) {
+            filteredList = filteredList?.filter((obj) => obj.functionName?.startsWith(this.workspaceService.getPrefixWithStage()));
         }
         return filteredList;
     }
 
     public async refreshData(): Promise<void> {
-        await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: Messages.label.awsGettingData,
-            cancellable: true
-        }, async () => {
-            let awsLambdaList = await this.awsService.getAllLambdaList();
-            const workspaceService = this.workspaceService;
-            const lambdaList = this.mergeLambdaData(awsLambdaList, workspaceService.getLambdaList());
-            workspaceService.saveLambdaList(lambdaList);
-        });
+        await vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title: Messages.label.awsGettingData,
+                cancellable: true,
+            },
+            async () => {
+                let awsLambdaList = await this.awsService.getAllLambdaList();
+                const workspaceService = this.workspaceService;
+                const lambdaList = this.mergeLambdaData(awsLambdaList, workspaceService.getLambdaList());
+                workspaceService.saveLambdaList(lambdaList);
+            },
+        );
     }
 
     private mergeLambdaData(awsLambdaList: LambdaData[], localLambdaList: LambdaData[] | undefined): LambdaData[] {
@@ -116,5 +121,4 @@ export class LambdaService extends ServerlessAssistant {
         }
         return lambdaList;
     }
-
 }

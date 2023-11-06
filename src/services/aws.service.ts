@@ -1,15 +1,23 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { FunctionConfiguration, GetFunctionCommand, GetFunctionCommandOutput, InvokeCommand, InvokeCommandInput, LambdaClient, ListFunctionsCommand, ListFunctionsRequest } from "@aws-sdk/client-lambda";
-import { fromIni } from "@aws-sdk/credential-providers";
-import { AwsCredentialIdentityProvider } from "@smithy/types";
+import {
+    FunctionConfiguration,
+    GetFunctionCommand,
+    GetFunctionCommandOutput,
+    InvokeCommand,
+    InvokeCommandInput,
+    LambdaClient,
+    ListFunctionsCommand,
+    ListFunctionsRequest,
+} from '@aws-sdk/client-lambda';
+import { fromIni } from '@aws-sdk/credential-providers';
+import { AwsCredentialIdentityProvider } from '@smithy/types';
 import * as vscode from 'vscode';
-import { Messages } from "../commons/messages";
-import { ServerlessAssistant } from "../commons/serverless-assistant";
+import { Messages } from '../commons/messages';
+import { ServerlessAssistant } from '../commons/serverless-assistant';
 import { LambdaData } from '../interfaces/lambda-data.interface';
-import { WorkspaceService } from "./worskpace.service";
+import { WorkspaceService } from './worskpace.service';
 
 export class AwsService extends ServerlessAssistant {
-
     workspaceService: WorkspaceService;
 
     constructor() {
@@ -25,7 +33,11 @@ export class AwsService extends ServerlessAssistant {
                 const terminal = vscode.window.createTerminal('Deploy: ' + serverlessName);
                 const currentStage = this.workspaceService.getCurrentStage();
                 const serverlessCliCommand = this.workspaceService.getServerlessCliCommand();
-                terminal.sendText(`${serverlessCliCommand} deploy function -f ${serverlessName} --verbose ${currentStage ? '--stage ' + currentStage : ''} --aws-profile ${this.workspaceService.getCurrentAwsProfile()} --region ${this.workspaceService.getCurrentAwsRegion()}`);
+                terminal.sendText(
+                    `${serverlessCliCommand} deploy function -f ${serverlessName} --verbose ${
+                        currentStage ? '--stage ' + currentStage : ''
+                    } --aws-profile ${this.workspaceService.getCurrentAwsProfile()} --region ${this.workspaceService.getCurrentAwsRegion()}`,
+                );
                 terminal.show();
             } else {
                 vscode.window.showErrorMessage(Messages.error.noServerlessFunctionNameDeploy);
@@ -39,7 +51,9 @@ export class AwsService extends ServerlessAssistant {
             const lambdaName = lambdaItem.label;
             const terminal = vscode.window.createTerminal('Log: ' + lambdaName);
             const awsCliCommand = this.workspaceService.getAwsCliCommand();
-            terminal.sendText(`${awsCliCommand} logs tail /aws/lambda/${lambdaName} --since ${this.workspaceService.getLogTime()} --follow  --profile ${this.workspaceService.getCurrentAwsProfile()} --region ${this.workspaceService.getCurrentAwsRegion()}`);
+            terminal.sendText(
+                `${awsCliCommand} logs tail /aws/lambda/${lambdaName} --since ${this.workspaceService.getLogTime()} --follow  --profile ${this.workspaceService.getCurrentAwsProfile()} --region ${this.workspaceService.getCurrentAwsRegion()}`,
+            );
             terminal.show();
         });
         this.getContext().subscriptions.push(showLogDisposable);
@@ -53,7 +67,9 @@ export class AwsService extends ServerlessAssistant {
             const stageSupport = this.workspaceService.getStageSupport();
             const terminalMode = this.workspaceService.getTerminalMode();
             data = this.cleanStringPayload(data);
-            let cliCommand = `${serverlessCliCommand} invoke local -f ${lambdaData.serverlessName} ${stageSupport ? '--stage ' + currentStage : ''} --aws-profile ${this.workspaceService.getCurrentAwsProfile()} --region ${this.workspaceService.getCurrentAwsRegion()}`;
+            let cliCommand = `${serverlessCliCommand} invoke local -f ${lambdaData.serverlessName} ${
+                stageSupport ? '--stage ' + currentStage : ''
+            } --aws-profile ${this.workspaceService.getCurrentAwsProfile()} --region ${this.workspaceService.getCurrentAwsRegion()}`;
             cliCommand += terminalMode === 'windowsCmd' ? ` --data ${JSON.stringify(data)}` : ` --data '${data}'`;
             const terminal = vscode.window.createTerminal('Invoke: ' + lambdaData.functionName);
             terminal.sendText(cliCommand);
@@ -73,8 +89,8 @@ export class AwsService extends ServerlessAssistant {
         data = this.cleanStringPayload(data);
         const input: InvokeCommandInput = {
             FunctionName: lambdaName,
-            InvocationType: "RequestResponse",
-            Payload: Buffer.from(JSON.stringify(JSON.parse(data)), "utf8"),
+            InvocationType: 'RequestResponse',
+            Payload: Buffer.from(JSON.stringify(JSON.parse(data)), 'utf8'),
         };
         const command = new InvokeCommand(input);
         const client = new LambdaClient(this.getAwsConfig());
@@ -107,12 +123,16 @@ export class AwsService extends ServerlessAssistant {
         const client = new LambdaClient(await this.getAwsConfig());
         let command = new ListFunctionsCommand(input);
         let response: any = await client.send(command);
-        response.Functions?.forEach((lambda: FunctionConfiguration) => { lambdaList.push(this.parseLambda(lambda, undefined)); });
+        response.Functions?.forEach((lambda: FunctionConfiguration) => {
+            lambdaList.push(this.parseLambda(lambda, undefined));
+        });
         while (response.NextMarker) {
             input = { Marker: response.NextMarker, MaxItems: 50 };
             command = new ListFunctionsCommand(input);
             response = await client.send(command);
-            response.Functions?.forEach((lambda: FunctionConfiguration) => { lambdaList.push(this.parseLambda(lambda, undefined)); });
+            response.Functions?.forEach((lambda: FunctionConfiguration) => {
+                lambdaList.push(this.parseLambda(lambda, undefined));
+            });
         }
         return lambdaList;
     }
@@ -125,8 +145,7 @@ export class AwsService extends ServerlessAssistant {
             timeout: functionConfiguration.Timeout,
             codeSize: functionConfiguration.CodeSize,
             isActive: true,
-            tags
+            tags,
         };
     }
-
 }

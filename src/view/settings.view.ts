@@ -5,7 +5,6 @@ import { ExtensionView } from './extension-view';
 import { SettingHtml } from './settings.html';
 
 export class SettingsView extends ExtensionView {
-
     settingsHtml: SettingHtml;
     workspaceService: WorkspaceService;
     logoScr: vscode.Uri | undefined;
@@ -32,13 +31,17 @@ export class SettingsView extends ExtensionView {
     }
 
     private createPanel() {
-        this.panel = vscode.window.createWebviewPanel('settings', Messages.label.worksspaceSettings, vscode.ViewColumn.One,
-            { enableScripts: true, retainContextWhenHidden: true });
+        this.panel = vscode.window.createWebviewPanel('settings', Messages.label.worksspaceSettings, vscode.ViewColumn.One, {
+            enableScripts: true,
+            retainContextWhenHidden: true,
+        });
         this.logoScr = this.panel?.webview.asWebviewUri(this.iconPath);
-        this.panel.webview.html = this.workspaceService.isExtensionConfigured() ? this.settingsHtml.getWebContentSettings(this.logoScr!) : this.settingsHtml.getWebContentWelcome(this.logoScr!);
+        this.panel.webview.html = this.workspaceService.isExtensionConfigured()
+            ? this.settingsHtml.getWebContentSettings(this.logoScr!)
+            : this.settingsHtml.getWebContentWelcome(this.logoScr!);
         this.panel.iconPath = this.iconPath;
         this.panel.webview.onDidReceiveMessage(
-            message => {
+            (message) => {
                 let stageList: string[];
                 switch (message.command) {
                     case 'start':
@@ -91,7 +94,7 @@ export class SettingsView extends ExtensionView {
                 }
             },
             undefined,
-            undefined
+            undefined,
         );
 
         this.panel.onDidDispose(
@@ -99,7 +102,7 @@ export class SettingsView extends ExtensionView {
                 this.panel = undefined;
             },
             null,
-            undefined
+            undefined,
         );
     }
 
@@ -122,8 +125,12 @@ export class SettingsView extends ExtensionView {
     }
 
     private async removeAwsProfile(profileName: string): Promise<void> {
-        const response = await vscode.window.showWarningMessage("Are you sure you want to delete " + profileName + " profile? This will delete all data related.", "Yes", "No");
-        if (response && response === "Yes") {
+        const response = await vscode.window.showWarningMessage(
+            'Are you sure you want to delete ' + profileName + ' profile? This will delete all data related.',
+            'Yes',
+            'No',
+        );
+        if (response && response === 'Yes') {
             this.workspaceService.removeAwsProfile(profileName);
         }
     }
@@ -137,11 +144,9 @@ export class SettingsView extends ExtensionView {
             await vscode.commands.executeCommand('lambdasView.refresh');
             this.workspaceService.setExtensionConfigured();
             this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
-        }
-        catch (error) {
+        } catch (error) {
             this.panel!.webview.html = this.settingsHtml.getWebContentWelcome(this.logoScr!);
             vscode.window.showErrorMessage('We could not retry yours lambdas, please check your aws profile settings!');
         }
     }
-
 }

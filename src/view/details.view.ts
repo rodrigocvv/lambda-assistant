@@ -1,12 +1,11 @@
 import * as vscode from 'vscode';
-import { AwsData, LambdaData } from '../interfaces/lambda-data.interface';
-import { ExtensionView } from './extension-view';
+import { LambdaData } from '../interfaces/lambda-data.interface';
+import { AwsService } from '../services/aws.service';
 import { WorkspaceService } from '../services/worskpace.service';
 import { DetailsHtml } from './details.html';
-import { AwsService } from '../services/aws.service';
+import { ExtensionView } from './extension-view';
 
 export class DetailsView extends ExtensionView {
-
     detailsHtml: DetailsHtml;
     awsService: AwsService;
     workspaceService: WorkspaceService;
@@ -34,15 +33,16 @@ export class DetailsView extends ExtensionView {
     }
 
     private createPanel(lambdaData: LambdaData) {
-        this.panel = vscode.window.createWebviewPanel('lambdaDetails', lambdaData.functionName, vscode.ViewColumn.One,
-            { enableScripts: true });
+        this.panel = vscode.window.createWebviewPanel('lambdaDetails', lambdaData.functionName, vscode.ViewColumn.One, {
+            enableScripts: true,
+        });
 
         this.panel.webview.html = this.detailsHtml.getLoader();
         this.panel.iconPath = this.iconPath;
         this.refreshLambdaDataFromAws(lambdaData);
 
         this.panel.webview.onDidReceiveMessage(
-            message => {
+            (message) => {
                 switch (message.command) {
                     case 'refresh':
                         this.panel!.webview.html = this.detailsHtml.getLoader();
@@ -51,7 +51,7 @@ export class DetailsView extends ExtensionView {
                 }
             },
             undefined,
-            undefined
+            undefined,
         );
 
         this.panel.onDidDispose(
@@ -59,13 +59,12 @@ export class DetailsView extends ExtensionView {
                 this.panel = undefined;
             },
             null,
-            undefined
+            undefined,
         );
     }
 
-    private async refreshLambdaDataFromAws(lambdaData: LambdaData): Promise<void>{
+    private async refreshLambdaDataFromAws(lambdaData: LambdaData): Promise<void> {
         const refreshedData = await this.awsService.getLambdaDataByName(lambdaData.functionName);
         this.panel!.webview.html = this.detailsHtml.getWebViewHtml(refreshedData);
     }
-
 }

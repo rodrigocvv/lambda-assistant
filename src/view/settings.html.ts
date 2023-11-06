@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
-import { ServerlessAssistant } from "../commons/serverless-assistant";
-import { WorkspaceService } from "../services/worskpace.service";
+import { ServerlessAssistant } from '../commons/serverless-assistant';
+import { WorkspaceService } from '../services/worskpace.service';
 
 export class SettingHtml extends ServerlessAssistant {
-
     workspaceService: WorkspaceService;
 
     constructor() {
@@ -116,8 +115,12 @@ export class SettingHtml extends ServerlessAssistant {
                                         <br><br>
                                         Terminal Type<br>
                                         <select name="terminalMode" id="terminalMode" onchange="changeTerminalMode(this)">
-                                            <option value="windowsCmd" ${this.workspaceService.getTerminalMode() === 'windowsCmd' ? 'selected' : ''}>Windows Cmd</option>
-                                            <option value="shell" ${this.workspaceService.getTerminalMode() === 'shell' ? 'selected' : ''}>Shell</option>
+                                            <option value="windowsCmd" ${
+                                                this.workspaceService.getTerminalMode() === 'windowsCmd' ? 'selected' : ''
+                                            }>Windows Cmd</option>
+                                            <option value="shell" ${
+                                                this.workspaceService.getTerminalMode() === 'shell' ? 'selected' : ''
+                                            }>Shell</option>
                                         </select>
                                         <br><br><br>
                                         <button style="width: 150px;height:30px;" class="form-button" onclick="save()">Save</button>
@@ -127,7 +130,9 @@ export class SettingHtml extends ServerlessAssistant {
                                 <div style="padding-top: 20px; margin-bottom: 20px;">
                                 <table>
                                     <tr>
-                                        <td><input type="checkbox" ${this.workspaceService.getStageSupport() ? 'checked' : ''} id="checkStage" onclick="checkStage()"></td>
+                                        <td><input type="checkbox" ${
+                                            this.workspaceService.getStageSupport() ? 'checked' : ''
+                                        } id="checkStage" onclick="checkStage()"></td>
                                         <td>Add stages support</td>
                                     </tr>
                                 </table>
@@ -201,7 +206,9 @@ export class SettingHtml extends ServerlessAssistant {
             html += `
             <tr>
                 <td>${profile} - <button onclick="updateProfile('${profile}')" style="width:55px;">Update</button></td>
-                <td><button onclick="removeProfile('${profile}')" ${profileList.length < 2 ? 'disabled' : ''} style="width:25px;">-</button></td>
+                <td><button onclick="removeProfile('${profile}')" ${
+                profileList.length < 2 ? 'disabled' : ''
+            } style="width:25px;">-</button></td>
             </tr>
         `;
         });
@@ -280,7 +287,9 @@ export class SettingHtml extends ServerlessAssistant {
                                                     Profile Name(credentials file):
                                                 </td>
                                                 <td>
-                                                    <input type="text" id="awsProfile" size="20" value="${this.workspaceService.getCurrentAwsProfile() || 'default'}">
+                                                    <input type="text" id="awsProfile" size="20" value="${
+                                                        this.workspaceService.getCurrentAwsProfile() || 'default'
+                                                    }">
                                                 </td>
                                             </tr>
                                             <tr>
@@ -336,5 +345,4 @@ export class SettingHtml extends ServerlessAssistant {
         </HTML>
         `;
     }
-
 }
