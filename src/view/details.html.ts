@@ -69,9 +69,6 @@ export class DetailsHtml {
                     </div>
                     </center>
                 </BODY>
-                <script>
-                    checkStage();
-                </script>
             </HTML>
         `;
     }

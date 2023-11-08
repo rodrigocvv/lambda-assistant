@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
+import { Constants } from '../commons/constants';
 import { Messages } from '../commons/messages';
+import { Command } from '../enums/command.enum';
 import { LambdaData } from '../interfaces/lambda-data.interface';
 import { AwsService } from '../services/aws.service';
 import { WorkspaceService } from '../services/worskpace.service';
@@ -10,6 +12,7 @@ export class InvokeView extends ExtensionView {
     invokeHtml: InvokeHtml;
     workspaceService: WorkspaceService;
     awsService: AwsService;
+    lambdaData: LambdaData | undefined;
 
     constructor() {
         super();
@@ -18,88 +21,57 @@ export class InvokeView extends ExtensionView {
         this.invokeHtml = new InvokeHtml();
     }
 
-    panel: vscode.WebviewPanel | undefined;
-
-    public openView(lambdaData: LambdaData) {
-        if (this.panel) {
-            this.panel?.dispose();
-        }
-        this.createPanel(lambdaData);
-    }
-
-    public registerOpenInvokeViewButton(viewId: string): void {
+    public registerOpenInvokeViewButtonCommand(viewId: string): void {
         let invokeButonDisposable = vscode.commands.registerCommand(viewId, async (lambdaItem) => {
-            this.openView(lambdaItem.lambdaData);
+            this.lambdaData = lambdaItem.lambdaData;
+            this.openView(Constants.WEB_VIEW_ID_INVOKE, Constants.WEB_VIEW_ID_INVOKE + ' ' + lambdaItem.lambdaData.functionName, true);
+            this.panel!.webview.html = this.invokeHtml.getWebViewHtml(lambdaItem.lambdaData, undefined, false);
         });
         this.getContext().subscriptions.push(invokeButonDisposable);
     }
 
     public registerOpenInvokeViewCommand(viewId: string): void {
         let invokeButonDisposable = vscode.commands.registerCommand(viewId, async (lambdaData) => {
-            this.openView(lambdaData);
+            this.lambdaData = lambdaData;
+            this.openView(Constants.WEB_VIEW_ID_INVOKE, Constants.WEB_VIEW_ID_INVOKE + ' ' + lambdaData.functionName, true);
+            this.panel!.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
         });
         this.getContext().subscriptions.push(invokeButonDisposable);
     }
 
-    private createPanel(lambdaData: LambdaData) {
-        this.panel = vscode.window.createWebviewPanel(
-            'Invoke' + lambdaData.functionName,
-            'Invoke ' + lambdaData.functionName,
-            vscode.ViewColumn.One,
-            {
-                enableScripts: true,
-                retainContextWhenHidden: true,
-            },
-        );
-
-        this.panel.iconPath = this.iconPath;
-        this.panel.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
-        this.panel.webview.onDidReceiveMessage(
-            (message) => {
-                switch (message.command) {
-                    case 'refresh':
-                        this.panel!.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
-                        break;
-                    case 'changeName':
-                        this.invokeHtml.selectedData = message.text;
-                        this.panel!.webview.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
-                        break;
-                    case 'invokeAws':
-                        this.workspaceService.saveInvokeData(lambdaData.functionName, message.invokeName, message.text);
-                        this.invokeLambdaAws(message.text, lambdaData);
-                        break;
-                    case 'invokeLocal':
-                        this.workspaceService.saveInvokeData(lambdaData.functionName, message.invokeName, message.text);
-                        this.awsService.invokeLambdaLocal(lambdaData.functionName, message.text);
-                        break;
-                    case 'addBookmark':
-                        this.workspaceService.saveInvokeData(lambdaData.functionName, message.invokeName, message.text);
-                        this.workspaceService.setBookmark(lambdaData.functionName, true);
-                        vscode.commands.executeCommand('invokeBookmarkView.refresh');
-                        this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
-                        break;
-                    case 'removeBookmark':
-                        this.workspaceService.saveInvokeData(lambdaData.functionName, message.invokeName, message.text);
-                        this.workspaceService.setBookmark(lambdaData.functionName, false);
-                        vscode.commands.executeCommand('invokeBookmarkView.refresh');
-                        this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(lambdaData, undefined, false);
-                        break;
-                    case 'editServerlessName':
-                        this.editServerlessName(lambdaData);
-                        break;
-                }
-            },
-            undefined,
-            undefined,
-        );
-
-        this.panel.onDidDispose(
-            () => {
-                this.panel = undefined;
-            },
-            null,
-            undefined,
-        );
+    async executeViewActions(message: any): Promise<void> {
+        switch (message.command) {
+            case Constants.ACTION_REFRESH:
+                this.panel!.webview.html = this.invokeHtml.getWebViewHtml(this.lambdaData!, undefined, false);
+                break;
+            case Constants.ACTION_CHANGE_NAME:
+                this.invokeHtml.selectedData = message.text;
+                this.panel!.webview.html = this.invokeHtml.getWebViewHtml(this.lambdaData!, undefined, false);
+                break;
+            case Constants.ACTION_INVOKE_AWS:
+                this.workspaceService.saveInvokeData(this.lambdaData!.functionName, message.invokeName, message.text);
+                this.invokeLambdaAws(message.text, this.lambdaData!);
+                break;
+            case Constants.ACTION_INVOKE_LOCAL:
+                this.workspaceService.saveInvokeData(this.lambdaData!.functionName, message.invokeName, message.text);
+                this.awsService.invokeLambdaLocal(this.lambdaData!.functionName, message.text);
+                break;
+            case Constants.ACTION_ADD_BOOKMARK:
+                this.workspaceService.saveInvokeData(this.lambdaData!.functionName, message.invokeName, message.text);
+                this.workspaceService.setBookmark(this.lambdaData!.functionName, true);
+                vscode.commands.executeCommand(Command.BOOKMARK_VIEW_REFRESH);
+                this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(this.lambdaData!, undefined, false);
+                break;
+            case Constants.ACTION_REMOVE_BOOKMARK:
+                this.workspaceService.saveInvokeData(this.lambdaData!.functionName, message.invokeName, message.text);
+                this.workspaceService.setBookmark(this.lambdaData!.functionName, false);
+                vscode.commands.executeCommand(Command.BOOKMARK_VIEW_REFRESH);
+                this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(this.lambdaData!, undefined, false);
+                break;
+            case Constants.ACTION_EDIT_SERVERLESS_NAME:
+                this.editServerlessName(this.lambdaData!);
+                break;
+        }
     }
 
     private async editServerlessName(lambdaData: LambdaData): Promise<void> {
@@ -108,7 +80,7 @@ export class InvokeView extends ExtensionView {
         });
         if (serverlessName) {
             this.workspaceService.setServerlessName(lambdaData.functionName, serverlessName);
-            vscode.commands.executeCommand('lambdasView.updateView');
+            vscode.commands.executeCommand(Command.LAMBDA_VIEW_UPDATE_VIEW);
             this.panel!.webview!.html = this.invokeHtml.getWebViewHtml(
                 this.workspaceService.getLambdaByName(lambdaData.functionName)!,
                 undefined,

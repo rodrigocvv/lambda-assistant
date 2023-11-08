@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { Messages } from '../commons/messages';
 import { ServerlessAssistant } from '../commons/serverless-assistant';
+import { Command } from '../enums/command.enum';
 import { LambdaData } from '../interfaces/lambda-data.interface';
 import { LambdaProvider } from '../providers/lambda.provider';
 import { AwsService } from './aws.service';
@@ -27,7 +28,7 @@ export class LambdaService extends ServerlessAssistant {
     public registerUpdateViewCommand(viewId: string): void {
         let refreshLmabdaButonDisposable = vscode.commands.registerCommand(viewId, async () => {
             this.lambdaProvider?.refresh(this.getLambdaList());
-            vscode.commands.executeCommand('invokeBookmarkView.refresh');
+            vscode.commands.executeCommand(Command.BOOKMARK_VIEW_REFRESH);
         });
         this.getContext().subscriptions.push(refreshLmabdaButonDisposable);
     }
@@ -37,17 +38,21 @@ export class LambdaService extends ServerlessAssistant {
             await this.refreshData();
             const lambdaList = this.getLambdaList();
             this.lambdaProvider?.refresh(lambdaList);
-            await vscode.commands.executeCommand('invokeBookmarkView.refresh');
+            await vscode.commands.executeCommand(Command.BOOKMARK_VIEW_REFRESH);
         });
         this.getContext().subscriptions.push(refreshLmabdaButonDisposable);
     }
 
     public async registerChangeStageCommand(viewId: string): Promise<void> {
         let changeStageButonDisposable = vscode.commands.registerCommand(viewId, async () => {
-            const stageList: string[] = this.getContext().workspaceState.get('stageList') || [];
-            const stage = await vscode.window.showQuickPick(stageList, { canPickMany: false, title: Messages.label.selectStage });
-            this.getContext().workspaceState.update('currentStage', stage);
-            this.lambdaProvider?.refresh(this.getLambdaList());
+            const stage = await vscode.window.showQuickPick(this.workspaceService.getStageList(), {
+                canPickMany: false,
+                title: Messages.label.selectStage,
+            });
+            if (stage) {
+                this.workspaceService.setCurrentStage(stage);
+                this.lambdaProvider?.refresh(this.getLambdaList());
+            }
         });
         this.getContext().subscriptions.push(changeStageButonDisposable);
     }
@@ -62,7 +67,7 @@ export class LambdaService extends ServerlessAssistant {
             if (currentAwsProfile) {
                 this.workspaceService.setCurrentAwsProfile(currentAwsProfile);
                 this.lambdaProvider?.refresh(this.getLambdaList());
-                vscode.commands.executeCommand('invokeBookmarkView.refresh');
+                vscode.commands.executeCommand(Command.BOOKMARK_VIEW_REFRESH);
             }
         });
         this.getContext().subscriptions.push(changeProfileButonDisposable);

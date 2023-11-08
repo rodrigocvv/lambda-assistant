@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
+import { Constants } from '../commons/constants';
 import { Messages } from '../commons/messages';
+import { Command } from '../enums/command.enum';
 import { WorkspaceService } from '../services/worskpace.service';
 import { ExtensionView } from './extension-view';
 import { SettingHtml } from './settings.html';
@@ -15,123 +17,94 @@ export class SettingsView extends ExtensionView {
         this.settingsHtml = new SettingHtml();
     }
 
-    panel: vscode.WebviewPanel | undefined;
-
     public registerOpenSettingsCommand(viewId: string): void {
         let openSettingsButonDisposable = vscode.commands.registerCommand(viewId, async () => {
-            this.openView();
+            this.openView(Constants.WEB_VIEW_ID_SETTINGS, Messages.label.worksspaceSettings, true);
+            this.logoScr = this.panel?.webview.asWebviewUri(this.iconPath);
+            this.panel!.webview.html = this.workspaceService.isExtensionConfigured()
+                ? this.settingsHtml.getWebContentSettings(this.logoScr!)
+                : this.settingsHtml.getWebContentWelcome(this.logoScr!);
         });
         this.getContext().subscriptions.push(openSettingsButonDisposable);
     }
 
-    public openView() {
-        if (!this.panel) {
-            this.createPanel();
+    async executeViewActions(message: any): Promise<void> {
+        switch (message.command) {
+            case Constants.ACTION_START:
+                this.startExtension(message.prefix, message.awsProfile, message.awsRegion);
+                break;
+            case Constants.ACTION_SAVE:
+                this.workspaceService.setPrefix(message.text);
+                vscode.commands.executeCommand(Command.LAMBDA_VIEW_REFRESH);
+                vscode.window.showInformationMessage(Messages.label.prefixSaved);
+                break;
+            case Constants.ACTION_ADD_NEW_PROFILE:
+                this.workspaceService.addNewProfile(message.profileName);
+                this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
+                break;
+            case Constants.ACTION_REMOVE_PROFILE:
+                await this.removeAwsProfile(message.profileName);
+                break;
+            case Constants.ACTION_ADD_STAGE_SUPPORT:
+                this.workspaceService.setStageSupport(message.text);
+                this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
+                break;
+            case Constants.ACTION_ADD_STAGE:
+                this.workspaceService.addStage(message.text);
+                this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
+                break;
+            case Constants.ACTION_DELETE_STAGE:
+                this.workspaceService.removeStage(message.text);
+                this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
+                break;
+            case Constants.ACTION_UPDATE_PROFILE:
+                await this.updateProfileName(message.profileName);
+
+                break;
+            case Constants.ACTION_CHANGE_REGION:
+                this.changeRegion();
+                break;
+            case Constants.ACTION_UPDATE_CLI_COMMANDS:
+                this.workspaceService.setAwsCliCommand(message.awsCliCommand);
+                this.workspaceService.setServerlessCliCommand(message.serverlessCliCommand);
+                vscode.window.showInformationMessage(Messages.label.cliCommandSaved);
+                this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
+                break;
+            case Constants.ACTION_CHANGE_TERMINAL_MODE:
+                this.workspaceService.setTerminalMode(message.terminalMode);
+                this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
+                break;
         }
     }
 
-    private createPanel() {
-        this.panel = vscode.window.createWebviewPanel('settings', Messages.label.worksspaceSettings, vscode.ViewColumn.One, {
-            enableScripts: true,
-            retainContextWhenHidden: true,
-        });
-        this.logoScr = this.panel?.webview.asWebviewUri(this.iconPath);
-        this.panel.webview.html = this.workspaceService.isExtensionConfigured()
-            ? this.settingsHtml.getWebContentSettings(this.logoScr!)
-            : this.settingsHtml.getWebContentWelcome(this.logoScr!);
-        this.panel.iconPath = this.iconPath;
-        this.panel.webview.onDidReceiveMessage(
-            (message) => {
-                let stageList: string[];
-                switch (message.command) {
-                    case 'start':
-                        this.startExtension(message.prefix, message.awsProfile, message.awsRegion);
-                        break;
-                    case 'save':
-                        this.workspaceService.setPrefix(message.text);
-                        vscode.commands.executeCommand('lambdasView.refresh');
-                        vscode.window.showInformationMessage('Data saved!');
-                        break;
-                    case 'addNewProfile':
-                        this.workspaceService.addNewProfile(message.profileName);
-                        this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
-                        break;
-                    case 'removeProfile':
-                        this.removeAwsProfile(message.profileName).finally(() => {
-                            this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
-                        });
-                        break;
-                    case 'addStageSupport':
-                        this.workspaceService.setStageSupport(message.text);
-                        this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
-                        break;
-                    case 'addStage':
-                        this.workspaceService.addStage(message.text);
-                        this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
-                        break;
-                    case 'deleteStage':
-                        this.workspaceService.removeStage(message.text);
-                        this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
-                        break;
-                    case 'updateProfile':
-                        this.updateProfileName(message.profileName).then(() => {
-                            this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
-                        });
-                        break;
-                    case 'changeRegion':
-                        this.changeRegion();
-                        break;
-                    case 'updateCliCommands':
-                        this.workspaceService.setAwsCliCommand(message.awsCliCommand);
-                        this.workspaceService.setServerlessCliCommand(message.serverlessCliCommand);
-                        vscode.window.showInformationMessage('Cli Commands Updated!');
-                        this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
-                        break;
-                    case 'changeTerminalMode':
-                        this.workspaceService.setTerminalMode(message.terminalMode);
-                        this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
-                        break;
-                }
-            },
-            undefined,
-            undefined,
-        );
-
-        this.panel.onDidDispose(
-            () => {
-                this.panel = undefined;
-            },
-            null,
-            undefined,
-        );
-    }
-
     async changeRegion(): Promise<void> {
-        const newAwsRegion = await vscode.window.showInputBox({ title: 'Inform new AWS region code(ex: us-east-1):' });
+        const newAwsRegion = await vscode.window.showInputBox({ title: Messages.label.selectRegion });
         if (newAwsRegion) {
             this.workspaceService.setAwsRegion(newAwsRegion);
-            vscode.commands.executeCommand('lambdasView.refresh');
-            vscode.window.showInformationMessage('Region Changed!');
+            vscode.commands.executeCommand(Command.LAMBDA_VIEW_REFRESH);
+            vscode.window.showInformationMessage(Messages.label.regionSaved);
             this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
         }
     }
 
     async updateProfileName(oldProfileName: string): Promise<void> {
-        const newProfileName = await vscode.window.showInputBox({ title: 'Inform new profile name for ' + oldProfileName + ':' });
+        const newProfileName = await vscode.window.showInputBox({ title: Messages.label.selectNewProfile + oldProfileName });
         if (newProfileName) {
             this.workspaceService.updateProfileName(oldProfileName, newProfileName);
-            vscode.window.showInformationMessage('Profile name updated!');
+            vscode.window.showInformationMessage(Messages.label.profileSaved);
+            this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
         }
     }
 
     private async removeAwsProfile(profileName: string): Promise<void> {
         const response = await vscode.window.showWarningMessage(
-            'Are you sure you want to delete ' + profileName + ' profile? This will delete all data related.',
-            'Yes',
-            'No',
+            Messages.label.removeProfilePart1 + profileName + Messages.label.removeProfilePart2,
+            Constants.YES,
+            Constants.NO,
         );
-        if (response && response === 'Yes') {
+        if (response && response === Constants.YES) {
             this.workspaceService.removeAwsProfile(profileName);
+            this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
         }
     }
 
@@ -141,12 +114,12 @@ export class SettingsView extends ExtensionView {
             this.workspaceService.setPrefix(prefix);
             this.workspaceService.setAwsRegion(awsRegion);
             this.workspaceService.setCurrentAwsProfile(awsProfile);
-            await vscode.commands.executeCommand('lambdasView.refresh');
+            await vscode.commands.executeCommand(Command.LAMBDA_VIEW_REFRESH);
             this.workspaceService.setExtensionConfigured();
             this.panel!.webview.html = this.settingsHtml.getWebContentSettings(this.logoScr!);
         } catch (error) {
             this.panel!.webview.html = this.settingsHtml.getWebContentWelcome(this.logoScr!);
-            vscode.window.showErrorMessage('We could not retry yours lambdas, please check your aws profile settings!');
+            vscode.window.showErrorMessage(Messages.error.fetchAwsData);
         }
     }
 }

@@ -1,10 +1,34 @@
 import * as vscode from 'vscode';
 import { ServerlessAssistant } from '../commons/serverless-assistant';
-export class ExtensionView extends ServerlessAssistant {
+export abstract class ExtensionView extends ServerlessAssistant {
     iconPath;
+    panel: vscode.WebviewPanel | undefined;
 
     constructor() {
         super();
         this.iconPath = vscode.Uri.joinPath(this.getContext().extensionUri, 'resources', 'ext_red.png');
+    }
+
+    public openView(viewId: string, viewLabel: string, retainContextWhenHidden: boolean) {
+        if (!this.panel) {
+            this.createPanel(viewId, viewLabel, retainContextWhenHidden);
+        }
+    }
+
+    abstract executeViewActions(message: any): Promise<void>;
+
+    createPanel(viewId: string, viewLabel: string, retainContextWhenHidden: boolean) {
+        this.panel = vscode.window.createWebviewPanel(viewId, viewLabel, vscode.ViewColumn.One, {
+            enableScripts: true, retainContextWhenHidden
+        });
+        this.panel.iconPath = this.iconPath;
+        this.panel.webview.onDidReceiveMessage((message) => this.executeViewActions(message), undefined, undefined);
+        this.panel.onDidDispose(
+            () => {
+                this.panel = undefined;
+            },
+            null,
+            undefined,
+        );
     }
 }

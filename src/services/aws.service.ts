@@ -16,6 +16,8 @@ import { Messages } from '../commons/messages';
 import { ServerlessAssistant } from '../commons/serverless-assistant';
 import { LambdaData } from '../interfaces/lambda-data.interface';
 import { WorkspaceService } from './worskpace.service';
+import { TerminalMode } from '../enums/terminal.enum';
+import { Constants } from '../commons/constants';
 
 export class AwsService extends ServerlessAssistant {
     workspaceService: WorkspaceService;
@@ -30,14 +32,19 @@ export class AwsService extends ServerlessAssistant {
             const localLambda = this.workspaceService.getLambdaByName(lambdaItem.lambdaData.functionName);
             const serverlessName = localLambda?.serverlessName;
             if (serverlessName) {
-                const terminal = vscode.window.createTerminal('Deploy: ' + serverlessName);
+                const terminal = vscode.window.createTerminal(Messages.label.deploy + serverlessName);
                 const currentStage = this.workspaceService.getCurrentStage();
                 const serverlessCliCommand = this.workspaceService.getServerlessCliCommand();
-                terminal.sendText(
-                    `${serverlessCliCommand} deploy function -f ${serverlessName} --verbose ${
-                        currentStage ? '--stage ' + currentStage : ''
-                    } --aws-profile ${this.workspaceService.getCurrentAwsProfile()} --region ${this.workspaceService.getCurrentAwsRegion()}`,
+                let cliCommand = Constants.DEPLOY_CLI_COMMAND;
+                cliCommand = cliCommand.replace(Constants.PARAM_CLI_COMMAND, serverlessCliCommand);
+                cliCommand = cliCommand.replace(Constants.PARAM_SERVERLESSNAME, serverlessName);
+                cliCommand = cliCommand.replace(Constants.PARAM_STAGE, currentStage ? Constants.CLI_PARAM_STAGE + currentStage : '');
+                cliCommand = cliCommand.replace(
+                    Constants.PARAM_AWS_PROFILE,
+                    this.workspaceService.getCurrentAwsProfile() || Constants.DEFAULT_PROFILE,
                 );
+                cliCommand = cliCommand.replace(Constants.PARAM_AWS_REGION, this.workspaceService.getCurrentAwsRegion());
+                terminal.sendText(cliCommand);
                 terminal.show();
             } else {
                 vscode.window.showErrorMessage(Messages.error.noServerlessFunctionNameDeploy);
@@ -49,11 +56,18 @@ export class AwsService extends ServerlessAssistant {
     public registerShowLogCommand(viewId: string): void {
         let showLogDisposable = vscode.commands.registerCommand(viewId, async (lambdaItem) => {
             const lambdaName = lambdaItem.label;
-            const terminal = vscode.window.createTerminal('Log: ' + lambdaName);
+            const terminal = vscode.window.createTerminal(Messages.label.log + lambdaName);
             const awsCliCommand = this.workspaceService.getAwsCliCommand();
-            terminal.sendText(
-                `${awsCliCommand} logs tail /aws/lambda/${lambdaName} --since ${this.workspaceService.getLogTime()} --follow  --profile ${this.workspaceService.getCurrentAwsProfile()} --region ${this.workspaceService.getCurrentAwsRegion()}`,
+            let cliCommand = Constants.SHOW_LOG_CLI_COMMAND;
+            cliCommand = cliCommand.replace(Constants.PARAM_CLI_COMMAND, awsCliCommand);
+            cliCommand = cliCommand.replace(Constants.PARAM_LAMBDA_NAME, lambdaName);
+            cliCommand = cliCommand.replace(Constants.PARAM_LOG_TIME, this.workspaceService.getLogTime());
+            cliCommand = cliCommand.replace(
+                Constants.PARAM_AWS_PROFILE,
+                this.workspaceService.getCurrentAwsProfile() || Constants.DEFAULT_PROFILE,
             );
+            cliCommand = cliCommand.replace(Constants.PARAM_AWS_REGION, this.workspaceService.getCurrentAwsRegion());
+            terminal.sendText(cliCommand);
             terminal.show();
         });
         this.getContext().subscriptions.push(showLogDisposable);
@@ -67,11 +81,22 @@ export class AwsService extends ServerlessAssistant {
             const stageSupport = this.workspaceService.getStageSupport();
             const terminalMode = this.workspaceService.getTerminalMode();
             data = this.cleanStringPayload(data);
-            let cliCommand = `${serverlessCliCommand} invoke local -f ${lambdaData.serverlessName} ${
-                stageSupport ? '--stage ' + currentStage : ''
-            } --aws-profile ${this.workspaceService.getCurrentAwsProfile()} --region ${this.workspaceService.getCurrentAwsRegion()}`;
-            cliCommand += terminalMode === 'windowsCmd' ? ` --data ${JSON.stringify(data)}` : ` --data '${data}'`;
-            const terminal = vscode.window.createTerminal('Invoke: ' + lambdaData.functionName);
+            let cliCommand = Constants.INVOKE_LOCAL_CLI_COMMAND;
+            cliCommand = cliCommand.replace(Constants.PARAM_CLI_COMMAND, serverlessCliCommand);
+            cliCommand = cliCommand.replace(Constants.PARAM_SERVERLESSNAME, lambdaData.serverlessName);
+            cliCommand = cliCommand.replace(Constants.PARAM_STAGE, currentStage ? Constants.CLI_PARAM_STAGE + currentStage : '');
+            cliCommand = cliCommand.replace(
+                Constants.PARAM_AWS_PROFILE,
+                this.workspaceService.getCurrentAwsProfile() || Constants.DEFAULT_PROFILE,
+            );
+            cliCommand = cliCommand.replace(Constants.PARAM_AWS_REGION, this.workspaceService.getCurrentAwsRegion());
+            cliCommand = cliCommand.replace(
+                Constants.PARAM_DATA,
+                terminalMode === TerminalMode.WINDOWS_CMD
+                    ? ` ${Constants.CLI_PARAM_DATA} ${JSON.stringify(data)}`
+                    : ` ${Constants.CLI_PARAM_DATA} '${data}'`,
+            );
+            const terminal = vscode.window.createTerminal(Messages.label.invoke + lambdaData.functionName);
             terminal.sendText(cliCommand);
             terminal.show();
         } else {
@@ -89,8 +114,8 @@ export class AwsService extends ServerlessAssistant {
         data = this.cleanStringPayload(data);
         const input: InvokeCommandInput = {
             FunctionName: lambdaName,
-            InvocationType: 'RequestResponse',
-            Payload: Buffer.from(JSON.stringify(JSON.parse(data)), 'utf8'),
+            InvocationType: Constants.REQUEST_RESPONSE,
+            Payload: Buffer.from(JSON.stringify(JSON.parse(data)), Constants.UTF8),
         };
         const command = new InvokeCommand(input);
         const client = new LambdaClient(this.getAwsConfig());

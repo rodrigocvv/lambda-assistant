@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
+import { Messages } from '../commons/messages';
 import { ServerlessAssistant } from '../commons/serverless-assistant';
+import { Command } from '../enums/command.enum';
 import { LambdaData } from '../interfaces/lambda-data.interface';
 import { LambdaProvider } from '../providers/lambda.provider';
 import { WorkspaceService } from './worskpace.service';
@@ -33,10 +35,13 @@ export class BookmarkService extends ServerlessAssistant {
     public registerBookmarkNewInvokeCommand(viewId: string): void {
         let bookmarNewInvokeCommand = vscode.commands.registerCommand(viewId, async () => {
             const lambdaNameList = this.workspaceService.getLambdaList()?.map((obj) => obj.functionName) || [];
-            const lambdaName = await vscode.window.showQuickPick(lambdaNameList, { canPickMany: false, title: 'Select your lambda:' });
+            const lambdaName = await vscode.window.showQuickPick(lambdaNameList, {
+                canPickMany: false,
+                title: Messages.label.selectLambda,
+            });
             if (lambdaName) {
                 const lambdaData = this.workspaceService.getLambdaList()?.find((lambda) => lambda.functionName === lambdaName);
-                vscode.commands.executeCommand('lambdaAssistant.openInvokeView', lambdaData);
+                vscode.commands.executeCommand(Command.LAMBDA_VIEW_INVOKE_VIEW, lambdaData);
             }
         });
         this.getContext().subscriptions.push(bookmarNewInvokeCommand);

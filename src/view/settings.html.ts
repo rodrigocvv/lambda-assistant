@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ServerlessAssistant } from '../commons/serverless-assistant';
 import { WorkspaceService } from '../services/worskpace.service';
+import { TerminalMode } from '../enums/terminal.enum';
 
 export class SettingHtml extends ServerlessAssistant {
     workspaceService: WorkspaceService;
@@ -115,11 +116,11 @@ export class SettingHtml extends ServerlessAssistant {
                                         <br><br>
                                         Terminal Type<br>
                                         <select name="terminalMode" id="terminalMode" onchange="changeTerminalMode(this)">
-                                            <option value="windowsCmd" ${
-                                                this.workspaceService.getTerminalMode() === 'windowsCmd' ? 'selected' : ''
+                                            <option value="${TerminalMode.WINDOWS_CMD}" ${
+                                                this.workspaceService.getTerminalMode() === TerminalMode.WINDOWS_CMD ? 'selected' : ''
                                             }>Windows Cmd</option>
-                                            <option value="shell" ${
-                                                this.workspaceService.getTerminalMode() === 'shell' ? 'selected' : ''
+                                            <option value="${TerminalMode.SHELL}" ${
+                                                this.workspaceService.getTerminalMode() === TerminalMode.SHELL ? 'selected' : ''
                                             }>Shell</option>
                                         </select>
                                         <br><br><br>
