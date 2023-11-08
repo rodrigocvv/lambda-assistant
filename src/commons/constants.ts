@@ -5,12 +5,15 @@ export class Constants {
     public static readonly YES = 'Yes';
     public static readonly NO = 'No';
     public static readonly DEFAULT_PROFILE = 'default';
+    public static readonly RESOURCES_FOLDER = 'resources';
+    public static readonly ICON_FILE = 'ext_red.png';
     public static readonly DEFAULT_SERVERLESS_CLI_COMMAND = 'serverless';
     public static readonly DEFAULT_AWS_CLI_COMMAND = 'aws';
     public static readonly DEFAULT_AWS_REGION = 'us-east-1';
     public static readonly SET_CONTEXT_COMMAND = 'setContext';
     public static readonly DEFAULT_LOG_TIME = '4h';
     public static readonly SERVERLESS_YAML_FILE = 'serverless.yml';
+    public static readonly DEFAULT_INVOKE_DATA_NAME = 'request1';
     public static readonly UTF8 = 'utf8';
     public static readonly REQUEST_RESPONSE = 'RequestResponse';
     public static readonly DEPLOY_CLI_COMMAND =
@@ -47,5 +50,4 @@ export class Constants {
     public static readonly ACTION_ADD_BOOKMARK = 'addBookmark';
     public static readonly ACTION_REMOVE_BOOKMARK = 'removeBookmark';
     public static readonly ACTION_EDIT_SERVERLESS_NAME = 'editServerlessName';
-
 }

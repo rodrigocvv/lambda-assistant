@@ -59,7 +59,6 @@ export class SettingsView extends ExtensionView {
                 break;
             case Constants.ACTION_UPDATE_PROFILE:
                 await this.updateProfileName(message.profileName);
-
                 break;
             case Constants.ACTION_CHANGE_REGION:
                 this.changeRegion();

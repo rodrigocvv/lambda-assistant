@@ -1,3 +1,4 @@
+import { Constants } from '../commons/constants';
 import { ServerlessAssistant } from '../commons/serverless-assistant';
 import { InvokeData, LambdaData } from '../interfaces/lambda-data.interface';
 import { WorkspaceService } from '../services/worskpace.service';
@@ -10,7 +11,7 @@ export class InvokeHtml extends ServerlessAssistant {
         this.workspaceService = new WorkspaceService();
     }
 
-    public selectedData = 'request1';
+    public selectedData = Constants.DEFAULT_INVOKE_DATA_NAME;
 
     public getWebViewHtml(lambdaData: LambdaData, invokeResponse: any, loading: boolean) {
         return `

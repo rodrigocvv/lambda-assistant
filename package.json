@@ -5,7 +5,7 @@
   "publisher": "Rodrigo Villela",
   "icon": "resources/ext_red.png",
   "pricing": "Free",
-  "version": "0.0.5",
+  "version": "0.0.51",
   "repository": {
     "type": "git",
     "url": "https://github.com/rodrigocvv/lambda-assistant"

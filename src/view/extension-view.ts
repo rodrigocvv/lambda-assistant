@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { Constants } from '../commons/constants';
 import { ServerlessAssistant } from '../commons/serverless-assistant';
 export abstract class ExtensionView extends ServerlessAssistant {
     iconPath;
@@ -6,7 +7,7 @@ export abstract class ExtensionView extends ServerlessAssistant {
 
     constructor() {
         super();
-        this.iconPath = vscode.Uri.joinPath(this.getContext().extensionUri, 'resources', 'ext_red.png');
+        this.iconPath = vscode.Uri.joinPath(this.getContext().extensionUri, Constants.RESOURCES_FOLDER, Constants.ICON_FILE);
     }
 
     public openView(viewId: string, viewLabel: string, retainContextWhenHidden: boolean) {
@@ -19,7 +20,8 @@ export abstract class ExtensionView extends ServerlessAssistant {
 
     createPanel(viewId: string, viewLabel: string, retainContextWhenHidden: boolean) {
         this.panel = vscode.window.createWebviewPanel(viewId, viewLabel, vscode.ViewColumn.One, {
-            enableScripts: true, retainContextWhenHidden
+            enableScripts: true,
+            retainContextWhenHidden,
         });
         this.panel.iconPath = this.iconPath;
         this.panel.webview.onDidReceiveMessage((message) => this.executeViewActions(message), undefined, undefined);

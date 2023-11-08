@@ -7,7 +7,7 @@ export class Messages {
             'For this operation you need to add your function identifier defined in serverless yaml. Click to edit ServerlessName in Invoke Page.',
         errorInvokeLambdaAws: 'Error invoking lambda from aws.',
         existingData: ' already exists.',
-        fetchAwsData: 'We could not fetch yours lambdas, please check your aws profile settings!'
+        fetchAwsData: 'We could not fetch yours lambdas, please check your aws profile settings!',
     };
 
     public static readonly label = {
@@ -28,6 +28,6 @@ export class Messages {
         prefixSaved: 'Prefix - Data Save!',
         cliCommandSaved: 'Cli Commands Updated!',
         regionSaved: 'Region Changed!',
-        profileSaved: 'Profile name updated!'
+        profileSaved: 'Profile name updated!',
     };
 }
